@@ -130,6 +130,70 @@ def generate_samples():
     corp_df.to_csv(corp_path, index=False)
     print(f"[OK] Generated {corp_path} ({len(corp_df)} rows)")
 
+    # 5. Kaggle PaySim Synthetic Financial Mobile Money & AML Dataset (500 rows)
+    n_paysim = 500
+    paysim_types = ["TRANSFER", "CASH_OUT", "PAYMENT", "CASH_IN", "DEBIT"]
+    paysim_data = []
+    for i in range(1, n_paysim + 1):
+        is_fraud = np.random.rand() < 0.08
+        txn_type = np.random.choice(["TRANSFER", "CASH_OUT"]) if is_fraud else np.random.choice(paysim_types)
+        amount = round(float(np.random.uniform(9000, 48000) if is_fraud else np.random.exponential(420) + 25), 2)
+        old_orig = round(float(amount + np.random.uniform(0, 500) if is_fraud else np.random.uniform(500, 60000)), 2)
+        new_orig = 0.0 if is_fraud else round(max(0.0, old_orig - amount), 2)
+        old_dest = round(float(np.random.uniform(0, 2000) if is_fraud else np.random.uniform(100, 40000)), 2)
+        new_dest = round(old_dest + amount, 2)
+
+        paysim_data.append({
+            "step": int(np.random.randint(1, 744)),
+            "type": txn_type,
+            "amount": amount,
+            "nameOrig": f"C{np.random.randint(100000000, 999999999)}",
+            "oldbalanceOrg": old_orig,
+            "newbalanceOrig": new_orig,
+            "nameDest": f"M{np.random.randint(100000000, 999999999)}" if txn_type == "PAYMENT" else f"C{np.random.randint(100000000, 999999999)}",
+            "oldbalanceDest": old_dest,
+            "newbalanceDest": new_dest,
+            "isFraud": 1 if is_fraud else 0,
+            "isFlaggedFraud": 1 if (is_fraud and amount > 20000) else 0
+        })
+
+    paysim_df = pd.DataFrame(paysim_data)
+    paysim_path = os.path.join(DATA_DIR, "sample_paysim_mobile_money.csv")
+    paysim_df.to_csv(paysim_path, index=False)
+    print(f"[OK] Generated {paysim_path} ({len(paysim_df)} rows)")
+
+    # 6. Kaggle IEEE-CIS E-Commerce Fraud & Identity Benchmark (500 rows)
+    n_ieee = 500
+    ieee_cards = ["visa", "mastercard", "american express", "discover"]
+    ieee_devices = ["Windows", "iOS Device", "MacOS", "Android", "Linux / Proxy"]
+    ieee_data = []
+    for i in range(1, n_ieee + 1):
+        is_fraud = np.random.rand() < 0.075
+        amt = round(float(np.random.uniform(350, 2900) if is_fraud else np.random.exponential(75) + 10), 2)
+        prod = "W" if is_fraud and np.random.rand() < 0.7 else np.random.choice(["W", "C", "H", "R"])
+        c4 = np.random.choice(ieee_cards)
+        email = "protonmail.com" if is_fraud and np.random.rand() < 0.5 else np.random.choice(["gmail.com", "yahoo.com", "outlook.com", "icloud.com"])
+        dev = "Linux / Proxy" if is_fraud and np.random.rand() < 0.6 else np.random.choice(ieee_devices[:4])
+
+        ieee_data.append({
+            "TransactionID": 3000000 + i,
+            "TransactionAmt": amt,
+            "ProductCD": prod,
+            "card1": int(np.random.randint(1000, 18000)),
+            "card2": int(np.random.randint(100, 600)),
+            "card4": c4,
+            "P_emaildomain": email,
+            "DeviceType": "desktop" if "Windows" in dev or "MacOS" in dev else "mobile",
+            "DeviceInfo": dev,
+            "isFraud": 1 if is_fraud else 0
+        })
+
+    ieee_df = pd.DataFrame(ieee_data)
+    ieee_path = os.path.join(DATA_DIR, "sample_ieeecis_ecommerce.csv")
+    ieee_df.to_csv(ieee_path, index=False)
+    print(f"[OK] Generated {ieee_path} ({len(ieee_df)} rows)")
+
 
 if __name__ == "__main__":
     generate_samples()
+

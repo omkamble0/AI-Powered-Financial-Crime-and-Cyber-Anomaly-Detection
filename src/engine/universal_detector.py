@@ -99,6 +99,38 @@ class UniversalDetector:
                 "is_pca": True
             }
 
+        # PaySim Mobile Money / AML Graph schema check
+        if any(c in cols for c in ("oldbalanceOrg", "newbalanceOrig", "nameOrig")):
+            amount_col = next((c for c in cols if c.lower() in ("amount", "amt")), "amount")
+            time_col = next((c for c in cols if c.lower() in ("step", "time")), "step")
+            user_col = next((c for c in cols if c.lower() in ("nameorig", "sender")), "nameOrig")
+            merchant_col = next((c for c in cols if c.lower() in ("namedest", "receiver")), "nameDest")
+            return {
+                "dataset_type": "Kaggle PaySim: Mobile Money & AML Network",
+                "strategy": "ADAPTIVE_ISOLATION_FOREST_AND_EVT",
+                "description": "Recognized Kaggle PaySim schema (step, balances, origin-destination). Scored via Outlier Modeling & Balance Drain Ratios.",
+                "amount_col": amount_col,
+                "time_col": time_col,
+                "user_col": user_col,
+                "merchant_col": merchant_col,
+                "is_pca": False
+            }
+
+        # IEEE-CIS E-Commerce & Identity schema check
+        if any(c in cols for c in ("TransactionID", "ProductCD", "P_emaildomain")):
+            amount_col = next((c for c in cols if c in ("TransactionAmt", "amount")), "TransactionAmt")
+            user_col = next((c for c in cols if c in ("card1", "user_id")), "card1")
+            return {
+                "dataset_type": "Kaggle IEEE-CIS: E-Commerce Fraud & Identity",
+                "strategy": "ADAPTIVE_ISOLATION_FOREST_AND_EVT",
+                "description": "Recognized Kaggle IEEE-CIS e-commerce schema. Scored via Outlier Detection, Card Routing & Device Attribution.",
+                "amount_col": amount_col,
+                "time_col": None,
+                "user_col": user_col,
+                "merchant_col": "ProductCD" if "ProductCD" in cols else None,
+                "is_pca": False
+            }
+
         amount_col = next((c for c in cols if any(k in c.lower() for k in ("amount", "amt", "price", "total", "value", "sum", "cost", "usd", "txn_amt"))), None)
         time_col = next((c for c in cols if any(k in c.lower() for k in ("time", "date", "timestamp", "created", "hour", "step"))), None)
         user_col = next((c for c in cols if any(k in c.lower() for k in ("user", "customer", "client", "sender", "card", "account_id", "email", "ip"))), None)

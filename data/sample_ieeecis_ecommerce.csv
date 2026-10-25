@@ -1,0 +1,501 @@
+TransactionID,TransactionAmt,ProductCD,card1,card2,card4,P_emaildomain,DeviceType,DeviceInfo,isFraud
+3000001,99.18,W,3787,169,visa,icloud.com,desktop,MacOS,0
+3000002,81.75,R,8607,276,visa,outlook.com,desktop,MacOS,0
+3000003,41.44,W,16975,115,american express,icloud.com,desktop,Windows,0
+3000004,26.69,C,8654,210,mastercard,outlook.com,desktop,MacOS,0
+3000005,19.04,W,13460,323,mastercard,icloud.com,mobile,Android,0
+3000006,14.84,W,3846,517,discover,outlook.com,desktop,Windows,0
+3000007,15.06,H,10409,540,discover,yahoo.com,desktop,Windows,0
+3000008,37.9,H,3045,113,mastercard,yahoo.com,desktop,MacOS,0
+3000009,46.28,C,17035,176,american express,icloud.com,mobile,iOS Device,0
+3000010,73.66,R,10417,475,mastercard,outlook.com,mobile,Android,0
+3000011,2107.35,H,11382,131,visa,protonmail.com,mobile,Linux / Proxy,1
+3000012,110.86,W,7125,374,discover,gmail.com,desktop,Windows,0
+3000013,34.24,R,2054,429,discover,gmail.com,mobile,iOS Device,0
+3000014,71.57,R,13282,143,mastercard,outlook.com,mobile,iOS Device,0
+3000015,171.83,H,17512,355,visa,outlook.com,mobile,iOS Device,0
+3000016,17.81,H,4556,407,american express,gmail.com,desktop,MacOS,0
+3000017,55.67,R,9583,331,american express,outlook.com,mobile,Android,0
+3000018,87.61,H,11367,273,visa,yahoo.com,mobile,iOS Device,0
+3000019,202.38,R,13693,125,american express,outlook.com,mobile,iOS Device,0
+3000020,101.56,R,7932,524,american express,outlook.com,mobile,Android,0
+3000021,23.6,W,7376,573,discover,icloud.com,mobile,Android,0
+3000022,121.26,C,12164,504,american express,outlook.com,mobile,Android,0
+3000023,158.74,R,13796,386,mastercard,icloud.com,mobile,iOS Device,0
+3000024,33.65,H,14003,349,mastercard,icloud.com,mobile,Android,0
+3000025,59.62,H,15733,230,mastercard,icloud.com,desktop,Windows,0
+3000026,116.43,C,6965,433,visa,outlook.com,mobile,Android,0
+3000027,158.81,H,8084,267,visa,gmail.com,mobile,Android,0
+3000028,14.01,W,12700,306,discover,yahoo.com,mobile,iOS Device,0
+3000029,72.53,W,3866,298,american express,yahoo.com,desktop,MacOS,0
+3000030,12.44,C,5333,379,visa,yahoo.com,desktop,MacOS,0
+3000031,107.84,R,14961,267,visa,yahoo.com,mobile,Android,0
+3000032,212.11,H,8496,146,mastercard,outlook.com,mobile,iOS Device,0
+3000033,11.7,C,11006,239,american express,yahoo.com,mobile,Android,0
+3000034,92.76,C,13417,168,discover,yahoo.com,mobile,iOS Device,0
+3000035,408.17,C,8551,206,american express,gmail.com,desktop,MacOS,0
+3000036,2780.27,W,12133,581,american express,outlook.com,mobile,Linux / Proxy,1
+3000037,80.76,H,12075,271,discover,gmail.com,mobile,Android,0
+3000038,1244.16,W,4395,540,mastercard,protonmail.com,mobile,Linux / Proxy,1
+3000039,77.44,H,4436,466,american express,yahoo.com,desktop,Windows,0
+3000040,25.67,R,1477,218,mastercard,gmail.com,mobile,iOS Device,0
+3000041,46.75,R,16287,409,visa,yahoo.com,desktop,Windows,0
+3000042,50.75,W,5629,172,visa,icloud.com,mobile,iOS Device,0
+3000043,25.54,W,4669,276,visa,gmail.com,mobile,iOS Device,0
+3000044,242.43,H,10032,393,mastercard,outlook.com,desktop,MacOS,0
+3000045,1800.49,W,8874,392,visa,protonmail.com,desktop,Windows,1
+3000046,75.38,R,13102,317,mastercard,outlook.com,desktop,Windows,0
+3000047,68.55,C,6459,189,mastercard,outlook.com,desktop,MacOS,0
+3000048,149.55,R,13449,279,discover,yahoo.com,mobile,iOS Device,0
+3000049,221.82,H,17521,341,visa,icloud.com,mobile,Android,0
+3000050,53.32,H,9587,501,visa,icloud.com,mobile,Android,0
+3000051,13.58,C,4034,269,mastercard,yahoo.com,mobile,iOS Device,0
+3000052,88.01,W,15923,322,visa,icloud.com,mobile,iOS Device,0
+3000053,66.51,C,6380,222,mastercard,yahoo.com,desktop,Windows,0
+3000054,85.11,R,15726,599,visa,yahoo.com,desktop,MacOS,0
+3000055,364.0,H,12061,175,american express,yahoo.com,mobile,iOS Device,0
+3000056,13.6,C,12528,363,discover,outlook.com,mobile,Android,0
+3000057,26.23,C,1613,358,visa,icloud.com,desktop,MacOS,0
+3000058,25.51,C,8517,565,discover,yahoo.com,mobile,iOS Device,0
+3000059,24.2,R,17150,558,american express,yahoo.com,desktop,MacOS,0
+3000060,98.06,W,14300,560,mastercard,gmail.com,mobile,iOS Device,0
+3000061,54.47,R,14615,496,mastercard,gmail.com,mobile,iOS Device,0
+3000062,35.85,C,17130,483,mastercard,yahoo.com,desktop,MacOS,0
+3000063,14.83,W,4446,219,visa,icloud.com,desktop,Windows,0
+3000064,17.31,W,17496,288,visa,icloud.com,mobile,iOS Device,0
+3000065,32.82,R,12434,417,discover,yahoo.com,mobile,iOS Device,0
+3000066,37.37,R,12328,417,visa,icloud.com,desktop,Windows,0
+3000067,52.61,W,4759,141,american express,gmail.com,desktop,Windows,0
+3000068,73.54,W,2314,521,mastercard,icloud.com,mobile,iOS Device,0
+3000069,36.32,C,6710,400,discover,yahoo.com,mobile,Android,0
+3000070,63.48,W,16436,411,visa,gmail.com,desktop,Windows,0
+3000071,200.61,C,13072,364,visa,yahoo.com,desktop,MacOS,0
+3000072,72.51,H,15691,437,visa,outlook.com,mobile,iOS Device,0
+3000073,54.44,H,4742,370,american express,gmail.com,mobile,Android,0
+3000074,12.71,H,15431,213,mastercard,icloud.com,desktop,MacOS,0
+3000075,46.03,R,5675,227,mastercard,yahoo.com,mobile,Android,0
+3000076,23.46,C,2910,320,mastercard,icloud.com,mobile,Android,0
+3000077,125.59,W,16545,114,mastercard,gmail.com,mobile,Android,0
+3000078,24.82,C,4376,163,visa,outlook.com,desktop,Windows,0
+3000079,90.54,C,17524,407,mastercard,outlook.com,mobile,Android,0
+3000080,100.49,R,5806,457,visa,yahoo.com,mobile,iOS Device,0
+3000081,218.58,R,15385,331,american express,gmail.com,mobile,iOS Device,0
+3000082,368.49,H,9441,591,discover,protonmail.com,mobile,Linux / Proxy,1
+3000083,88.53,H,1891,568,mastercard,icloud.com,desktop,MacOS,0
+3000084,126.23,W,11362,424,visa,gmail.com,mobile,iOS Device,0
+3000085,115.39,H,4898,423,visa,icloud.com,desktop,Windows,0
+3000086,46.33,C,5313,114,visa,icloud.com,mobile,iOS Device,0
+3000087,71.61,R,1916,568,visa,outlook.com,desktop,Windows,0
+3000088,251.28,H,4485,289,discover,yahoo.com,mobile,iOS Device,0
+3000089,45.63,C,14509,545,visa,outlook.com,desktop,Windows,0
+3000090,174.4,W,10140,143,mastercard,yahoo.com,desktop,MacOS,0
+3000091,78.01,H,5113,202,american express,icloud.com,desktop,Windows,0
+3000092,68.82,R,14042,134,discover,gmail.com,mobile,Android,0
+3000093,43.6,C,16249,325,visa,outlook.com,mobile,Android,0
+3000094,14.0,C,11058,304,discover,icloud.com,mobile,iOS Device,0
+3000095,46.92,C,14428,252,discover,gmail.com,desktop,Windows,0
+3000096,73.69,C,17450,275,american express,yahoo.com,mobile,Android,0
+3000097,28.18,H,14640,170,mastercard,outlook.com,mobile,iOS Device,0
+3000098,91.26,W,1771,188,visa,outlook.com,desktop,Windows,0
+3000099,125.19,R,13534,460,visa,outlook.com,mobile,Android,0
+3000100,14.32,C,3977,353,mastercard,gmail.com,mobile,iOS Device,0
+3000101,40.33,R,17474,400,mastercard,yahoo.com,mobile,Android,0
+3000102,27.36,W,2479,118,american express,outlook.com,mobile,iOS Device,0
+3000103,283.15,R,6577,201,american express,icloud.com,desktop,MacOS,0
+3000104,93.36,H,3623,479,discover,outlook.com,mobile,iOS Device,0
+3000105,364.56,W,13798,141,discover,gmail.com,mobile,Android,0
+3000106,25.53,W,10958,405,mastercard,outlook.com,desktop,MacOS,0
+3000107,1033.42,W,8076,147,american express,yahoo.com,mobile,Android,1
+3000108,157.12,H,9273,324,mastercard,icloud.com,desktop,Windows,0
+3000109,131.81,H,10883,255,visa,icloud.com,mobile,Android,0
+3000110,14.95,W,6785,463,mastercard,yahoo.com,desktop,Windows,0
+3000111,52.03,C,1659,265,american express,icloud.com,mobile,Android,0
+3000112,21.77,H,5682,243,american express,outlook.com,desktop,MacOS,0
+3000113,123.8,H,13645,531,discover,outlook.com,mobile,iOS Device,0
+3000114,172.71,C,10729,420,mastercard,icloud.com,mobile,iOS Device,0
+3000115,187.0,R,3365,495,american express,outlook.com,desktop,MacOS,0
+3000116,168.51,W,5938,582,discover,yahoo.com,mobile,iOS Device,0
+3000117,14.02,H,15727,348,visa,yahoo.com,desktop,Windows,0
+3000118,26.64,W,9641,390,american express,gmail.com,desktop,MacOS,0
+3000119,71.12,W,9444,495,american express,outlook.com,mobile,iOS Device,0
+3000120,357.29,W,11362,461,discover,icloud.com,mobile,iOS Device,0
+3000121,79.13,H,14079,139,american express,icloud.com,mobile,iOS Device,0
+3000122,488.42,C,1862,531,visa,outlook.com,mobile,iOS Device,0
+3000123,68.78,W,3922,317,american express,icloud.com,mobile,iOS Device,0
+3000124,94.07,W,4086,334,american express,yahoo.com,mobile,Android,0
+3000125,25.37,C,16437,571,mastercard,icloud.com,mobile,Android,0
+3000126,30.75,C,12848,571,visa,gmail.com,mobile,Android,0
+3000127,43.64,W,3330,578,mastercard,icloud.com,desktop,MacOS,0
+3000128,31.54,W,8354,527,discover,yahoo.com,mobile,iOS Device,0
+3000129,35.15,W,2421,298,visa,icloud.com,desktop,Windows,0
+3000130,579.46,W,9077,108,discover,yahoo.com,mobile,Linux / Proxy,1
+3000131,59.31,W,1294,565,discover,yahoo.com,desktop,MacOS,0
+3000132,35.16,C,6743,210,discover,icloud.com,desktop,Windows,0
+3000133,159.15,W,16918,337,discover,gmail.com,mobile,iOS Device,0
+3000134,57.99,H,5356,386,mastercard,yahoo.com,desktop,Windows,0
+3000135,115.76,H,8621,250,visa,icloud.com,desktop,Windows,0
+3000136,33.2,H,15951,257,american express,yahoo.com,desktop,Windows,0
+3000137,22.31,R,12584,158,mastercard,gmail.com,desktop,Windows,0
+3000138,71.05,H,2375,157,discover,yahoo.com,desktop,MacOS,0
+3000139,158.55,W,16060,401,mastercard,icloud.com,mobile,Android,0
+3000140,28.55,C,1087,316,mastercard,yahoo.com,mobile,iOS Device,0
+3000141,245.17,H,3421,295,visa,yahoo.com,mobile,iOS Device,0
+3000142,50.32,R,8958,416,mastercard,outlook.com,mobile,iOS Device,0
+3000143,95.47,H,6811,527,discover,outlook.com,mobile,iOS Device,0
+3000144,108.22,R,2903,581,american express,yahoo.com,mobile,iOS Device,0
+3000145,30.05,C,6885,287,mastercard,outlook.com,mobile,iOS Device,0
+3000146,25.25,H,3134,408,american express,gmail.com,desktop,Windows,0
+3000147,2843.19,C,11187,234,american express,protonmail.com,mobile,Linux / Proxy,1
+3000148,66.81,C,6482,405,mastercard,outlook.com,mobile,Android,0
+3000149,18.52,R,15309,333,american express,gmail.com,mobile,iOS Device,0
+3000150,36.43,C,10174,188,discover,outlook.com,desktop,Windows,0
+3000151,111.5,H,15059,252,visa,yahoo.com,desktop,MacOS,0
+3000152,117.72,R,5721,351,american express,icloud.com,desktop,Windows,0
+3000153,189.48,C,14679,409,mastercard,outlook.com,desktop,Windows,0
+3000154,1871.65,W,10770,265,american express,protonmail.com,mobile,Linux / Proxy,1
+3000155,132.9,H,12101,204,mastercard,icloud.com,desktop,MacOS,0
+3000156,32.0,R,9428,117,discover,yahoo.com,desktop,MacOS,0
+3000157,24.47,W,17375,549,discover,gmail.com,mobile,Android,0
+3000158,15.78,C,3301,130,discover,outlook.com,mobile,Android,0
+3000159,97.26,W,5905,506,mastercard,gmail.com,desktop,Windows,0
+3000160,143.58,H,16586,178,discover,gmail.com,desktop,MacOS,0
+3000161,23.18,H,13345,523,american express,icloud.com,desktop,Windows,0
+3000162,66.81,W,15038,430,american express,outlook.com,desktop,Windows,0
+3000163,17.59,H,15503,582,visa,gmail.com,mobile,Android,0
+3000164,63.62,H,6340,109,american express,gmail.com,desktop,MacOS,0
+3000165,106.5,W,8994,559,visa,gmail.com,mobile,iOS Device,0
+3000166,1172.23,W,10524,151,visa,yahoo.com,mobile,Linux / Proxy,1
+3000167,41.85,R,16090,143,discover,yahoo.com,desktop,MacOS,0
+3000168,92.03,R,5517,364,visa,yahoo.com,mobile,iOS Device,0
+3000169,96.13,C,7490,124,visa,gmail.com,mobile,iOS Device,0
+3000170,70.38,W,12967,501,american express,outlook.com,desktop,MacOS,0
+3000171,32.07,H,6721,331,mastercard,gmail.com,mobile,Android,0
+3000172,64.48,H,17448,289,discover,yahoo.com,desktop,MacOS,0
+3000173,26.56,R,12240,168,discover,gmail.com,desktop,MacOS,0
+3000174,40.56,W,2694,339,visa,gmail.com,mobile,Android,0
+3000175,41.55,H,5581,579,mastercard,gmail.com,mobile,iOS Device,0
+3000176,109.6,R,6846,371,discover,outlook.com,mobile,iOS Device,0
+3000177,99.41,W,4171,243,american express,yahoo.com,desktop,MacOS,0
+3000178,123.9,W,12776,368,american express,yahoo.com,desktop,MacOS,0
+3000179,111.86,W,17240,179,discover,outlook.com,mobile,Android,0
+3000180,115.0,R,13704,225,visa,gmail.com,desktop,MacOS,0
+3000181,48.55,W,5711,535,visa,yahoo.com,mobile,Android,0
+3000182,106.21,R,12354,296,american express,outlook.com,mobile,iOS Device,0
+3000183,27.14,H,6059,245,mastercard,yahoo.com,desktop,MacOS,0
+3000184,26.29,C,7733,194,american express,gmail.com,desktop,Windows,0
+3000185,148.73,R,14446,182,discover,icloud.com,desktop,MacOS,0
+3000186,20.67,W,7066,498,visa,gmail.com,desktop,MacOS,0
+3000187,158.55,R,11249,363,discover,gmail.com,mobile,iOS Device,0
+3000188,15.7,H,10622,395,american express,outlook.com,mobile,iOS Device,0
+3000189,196.01,C,11104,303,american express,outlook.com,desktop,Windows,0
+3000190,143.38,H,4497,594,mastercard,gmail.com,desktop,Windows,0
+3000191,226.54,H,2821,261,american express,icloud.com,mobile,iOS Device,0
+3000192,34.21,W,17283,509,american express,outlook.com,mobile,iOS Device,0
+3000193,90.34,W,3793,486,mastercard,outlook.com,mobile,Android,0
+3000194,16.05,C,5453,300,mastercard,gmail.com,mobile,Android,0
+3000195,49.45,C,2461,478,mastercard,gmail.com,desktop,Windows,0
+3000196,17.91,R,14936,122,visa,yahoo.com,mobile,Android,0
+3000197,95.43,W,6728,132,visa,icloud.com,desktop,Windows,0
+3000198,11.54,C,3392,116,american express,gmail.com,mobile,iOS Device,0
+3000199,147.88,C,3438,523,mastercard,icloud.com,desktop,Windows,0
+3000200,36.74,H,2835,546,visa,outlook.com,mobile,Android,0
+3000201,210.91,C,10864,454,visa,outlook.com,mobile,Android,0
+3000202,84.62,C,17302,310,discover,gmail.com,mobile,Android,0
+3000203,25.52,R,12140,191,mastercard,gmail.com,desktop,Windows,0
+3000204,70.17,H,10906,366,discover,icloud.com,mobile,Android,0
+3000205,285.5,W,16244,339,visa,icloud.com,mobile,iOS Device,0
+3000206,22.75,C,6462,360,american express,icloud.com,mobile,iOS Device,0
+3000207,86.93,H,1027,248,mastercard,gmail.com,mobile,Android,0
+3000208,68.57,W,16861,429,mastercard,outlook.com,desktop,Windows,0
+3000209,2864.2,W,6614,199,american express,protonmail.com,mobile,Linux / Proxy,1
+3000210,107.99,C,11148,336,visa,gmail.com,desktop,MacOS,0
+3000211,12.19,W,15663,197,mastercard,yahoo.com,desktop,Windows,0
+3000212,37.7,R,2013,507,mastercard,icloud.com,mobile,iOS Device,0
+3000213,42.24,C,15760,174,mastercard,yahoo.com,desktop,Windows,0
+3000214,76.94,H,1567,460,visa,outlook.com,mobile,iOS Device,0
+3000215,10.74,H,5310,487,discover,yahoo.com,desktop,Windows,0
+3000216,147.67,H,12582,118,american express,yahoo.com,mobile,iOS Device,0
+3000217,94.01,W,16440,421,mastercard,outlook.com,desktop,Windows,0
+3000218,37.91,C,1068,155,visa,icloud.com,mobile,Android,0
+3000219,12.32,H,7891,573,mastercard,outlook.com,desktop,Windows,0
+3000220,38.86,C,8466,139,visa,icloud.com,desktop,MacOS,0
+3000221,41.98,C,4490,571,american express,outlook.com,mobile,Android,0
+3000222,36.34,W,15425,381,discover,outlook.com,desktop,MacOS,0
+3000223,102.43,H,15797,196,american express,icloud.com,desktop,Windows,0
+3000224,72.43,H,17661,250,american express,gmail.com,mobile,Android,0
+3000225,42.93,C,9882,224,discover,outlook.com,mobile,iOS Device,0
+3000226,12.97,C,10131,246,american express,icloud.com,mobile,iOS Device,0
+3000227,19.51,C,1024,430,american express,outlook.com,mobile,Android,0
+3000228,100.67,R,15010,138,american express,gmail.com,desktop,MacOS,0
+3000229,64.7,C,11469,382,visa,gmail.com,mobile,iOS Device,0
+3000230,77.63,W,7792,438,mastercard,yahoo.com,desktop,MacOS,0
+3000231,22.12,H,2702,490,discover,yahoo.com,desktop,Windows,0
+3000232,231.17,C,12459,413,discover,gmail.com,desktop,MacOS,0
+3000233,24.46,C,11466,226,visa,icloud.com,mobile,iOS Device,0
+3000234,67.23,R,4323,493,american express,outlook.com,mobile,Android,0
+3000235,16.41,H,9330,221,discover,outlook.com,mobile,Android,0
+3000236,108.11,H,16948,278,american express,outlook.com,desktop,MacOS,0
+3000237,12.13,R,6899,426,mastercard,gmail.com,desktop,Windows,0
+3000238,98.37,C,8466,347,american express,outlook.com,mobile,Android,0
+3000239,29.75,R,1552,272,american express,outlook.com,desktop,Windows,0
+3000240,110.41,H,10356,170,mastercard,outlook.com,desktop,Windows,0
+3000241,143.51,H,12606,509,mastercard,outlook.com,desktop,MacOS,0
+3000242,15.68,R,16409,413,mastercard,gmail.com,desktop,Windows,0
+3000243,1441.36,W,3988,179,mastercard,protonmail.com,mobile,Linux / Proxy,1
+3000244,25.36,C,17943,117,american express,gmail.com,desktop,MacOS,0
+3000245,122.2,H,8436,224,mastercard,icloud.com,desktop,MacOS,0
+3000246,248.85,W,10437,225,discover,outlook.com,desktop,MacOS,0
+3000247,150.21,R,6995,482,mastercard,outlook.com,desktop,MacOS,0
+3000248,37.47,C,6024,215,mastercard,outlook.com,mobile,iOS Device,0
+3000249,55.89,C,14778,539,discover,icloud.com,desktop,MacOS,0
+3000250,13.45,R,4310,416,mastercard,yahoo.com,mobile,Android,0
+3000251,20.37,H,3251,440,american express,yahoo.com,mobile,Android,0
+3000252,452.72,W,5600,214,discover,yahoo.com,mobile,Linux / Proxy,1
+3000253,120.1,R,9287,206,visa,outlook.com,mobile,Android,0
+3000254,65.55,C,14490,366,mastercard,icloud.com,desktop,Windows,0
+3000255,60.86,C,10895,362,visa,outlook.com,desktop,MacOS,0
+3000256,41.2,R,10136,513,visa,outlook.com,desktop,MacOS,0
+3000257,37.19,H,10979,298,discover,icloud.com,mobile,Android,0
+3000258,18.45,R,1051,211,discover,icloud.com,desktop,Windows,0
+3000259,87.84,W,15593,233,visa,yahoo.com,desktop,Windows,0
+3000260,32.8,H,1237,435,mastercard,icloud.com,desktop,Windows,0
+3000261,107.16,W,4540,179,discover,gmail.com,desktop,MacOS,0
+3000262,1739.25,W,2624,593,visa,yahoo.com,mobile,Linux / Proxy,1
+3000263,60.92,C,4947,319,visa,outlook.com,desktop,Windows,0
+3000264,59.46,R,1577,281,visa,icloud.com,mobile,Android,0
+3000265,42.02,C,14854,334,mastercard,gmail.com,mobile,iOS Device,0
+3000266,41.2,C,15719,269,american express,gmail.com,mobile,Android,0
+3000267,48.33,R,15694,374,mastercard,icloud.com,mobile,Android,0
+3000268,173.35,W,13078,578,visa,yahoo.com,desktop,MacOS,0
+3000269,49.69,W,15204,418,visa,icloud.com,mobile,iOS Device,0
+3000270,121.35,H,9154,371,mastercard,gmail.com,mobile,iOS Device,0
+3000271,38.04,H,1973,540,visa,outlook.com,mobile,iOS Device,0
+3000272,13.81,R,8329,400,mastercard,icloud.com,mobile,iOS Device,0
+3000273,281.95,H,16295,564,discover,icloud.com,desktop,Windows,0
+3000274,11.03,R,15136,196,american express,outlook.com,desktop,Windows,0
+3000275,30.53,W,6473,118,mastercard,icloud.com,mobile,Android,0
+3000276,38.78,W,8471,211,mastercard,outlook.com,mobile,iOS Device,0
+3000277,113.54,R,12394,578,visa,outlook.com,desktop,Windows,0
+3000278,1544.44,H,12274,585,discover,outlook.com,mobile,Linux / Proxy,1
+3000279,29.71,C,2760,430,discover,yahoo.com,mobile,Android,0
+3000280,244.71,R,4236,351,visa,yahoo.com,mobile,iOS Device,0
+3000281,27.55,W,10148,166,visa,yahoo.com,mobile,Android,0
+3000282,141.31,H,12142,372,visa,icloud.com,desktop,Windows,0
+3000283,1594.29,W,14740,584,visa,gmail.com,mobile,iOS Device,1
+3000284,34.45,C,1719,598,discover,outlook.com,mobile,iOS Device,0
+3000285,78.65,C,12267,323,discover,icloud.com,desktop,MacOS,0
+3000286,117.29,H,12697,143,discover,yahoo.com,mobile,iOS Device,0
+3000287,67.16,C,15548,333,discover,gmail.com,mobile,Android,0
+3000288,78.99,R,9401,495,mastercard,icloud.com,mobile,iOS Device,0
+3000289,32.89,W,14775,287,mastercard,gmail.com,mobile,iOS Device,0
+3000290,100.14,H,7270,491,discover,icloud.com,mobile,iOS Device,0
+3000291,23.46,H,9330,202,mastercard,yahoo.com,desktop,Windows,0
+3000292,123.33,W,4205,213,american express,icloud.com,mobile,iOS Device,0
+3000293,77.37,R,8946,198,mastercard,outlook.com,mobile,Android,0
+3000294,27.98,H,14719,257,visa,gmail.com,desktop,Windows,0
+3000295,37.0,W,4642,386,discover,gmail.com,desktop,MacOS,0
+3000296,123.18,C,10463,467,mastercard,outlook.com,desktop,MacOS,0
+3000297,148.06,C,7643,407,discover,icloud.com,mobile,Android,0
+3000298,31.78,R,2948,262,visa,icloud.com,mobile,Android,0
+3000299,44.57,R,16776,555,american express,gmail.com,mobile,iOS Device,0
+3000300,34.29,R,1799,393,visa,gmail.com,desktop,Windows,0
+3000301,25.87,W,13415,368,visa,yahoo.com,mobile,Android,0
+3000302,49.44,H,3839,344,discover,yahoo.com,desktop,Windows,0
+3000303,116.39,R,7548,520,mastercard,yahoo.com,mobile,iOS Device,0
+3000304,86.75,C,15024,249,american express,gmail.com,mobile,Android,0
+3000305,182.01,W,11558,591,visa,yahoo.com,mobile,Android,0
+3000306,53.89,W,11220,218,visa,outlook.com,mobile,Android,0
+3000307,67.99,H,9965,182,visa,icloud.com,mobile,Android,0
+3000308,61.77,R,1448,338,discover,icloud.com,desktop,Windows,0
+3000309,12.8,C,1294,314,american express,yahoo.com,mobile,Android,0
+3000310,11.69,W,3765,298,american express,icloud.com,mobile,iOS Device,0
+3000311,13.74,R,5786,465,american express,icloud.com,mobile,iOS Device,0
+3000312,133.45,H,16548,455,american express,outlook.com,desktop,Windows,0
+3000313,27.08,R,3121,241,discover,yahoo.com,mobile,Android,0
+3000314,42.6,W,16891,340,visa,gmail.com,mobile,iOS Device,0
+3000315,133.64,C,5874,555,mastercard,outlook.com,desktop,Windows,0
+3000316,67.2,C,8265,571,visa,icloud.com,desktop,Windows,0
+3000317,81.3,R,9519,384,discover,yahoo.com,mobile,iOS Device,0
+3000318,22.44,H,2268,389,mastercard,outlook.com,mobile,iOS Device,0
+3000319,23.13,C,12885,168,visa,outlook.com,desktop,MacOS,0
+3000320,2614.6,C,9041,231,mastercard,gmail.com,mobile,iOS Device,1
+3000321,52.65,W,1807,331,mastercard,outlook.com,desktop,MacOS,0
+3000322,26.6,W,7030,551,discover,icloud.com,desktop,MacOS,0
+3000323,64.53,R,3966,432,mastercard,gmail.com,desktop,Windows,0
+3000324,171.69,C,16844,182,american express,icloud.com,mobile,iOS Device,0
+3000325,56.04,R,5205,151,american express,gmail.com,mobile,iOS Device,0
+3000326,162.14,C,16405,127,american express,outlook.com,mobile,Android,0
+3000327,109.88,R,16730,264,discover,gmail.com,mobile,iOS Device,0
+3000328,75.07,H,16820,237,mastercard,gmail.com,mobile,Android,0
+3000329,67.75,W,7331,162,american express,gmail.com,desktop,Windows,0
+3000330,25.62,H,2158,371,discover,gmail.com,desktop,MacOS,0
+3000331,108.36,W,12200,414,visa,yahoo.com,desktop,MacOS,0
+3000332,15.54,W,11207,528,visa,yahoo.com,desktop,MacOS,0
+3000333,94.48,C,13449,287,mastercard,outlook.com,desktop,MacOS,0
+3000334,53.93,R,17383,255,discover,icloud.com,mobile,iOS Device,0
+3000335,140.56,R,17944,263,discover,gmail.com,mobile,iOS Device,0
+3000336,59.36,R,7728,168,mastercard,yahoo.com,mobile,Android,0
+3000337,54.95,W,1972,503,american express,outlook.com,desktop,MacOS,0
+3000338,50.56,C,5591,102,american express,outlook.com,mobile,iOS Device,0
+3000339,43.37,R,15351,328,american express,icloud.com,desktop,Windows,0
+3000340,77.55,R,1561,568,american express,gmail.com,desktop,MacOS,0
+3000341,57.38,C,17973,330,visa,gmail.com,desktop,Windows,0
+3000342,148.56,H,11292,448,discover,yahoo.com,desktop,Windows,0
+3000343,29.87,R,3205,118,mastercard,gmail.com,desktop,MacOS,0
+3000344,11.68,W,14851,522,visa,yahoo.com,desktop,Windows,0
+3000345,80.05,R,3167,196,discover,outlook.com,mobile,iOS Device,0
+3000346,26.76,R,4575,381,discover,gmail.com,desktop,MacOS,0
+3000347,53.13,R,13926,131,discover,outlook.com,mobile,Android,0
+3000348,57.32,R,2362,513,discover,gmail.com,mobile,Android,0
+3000349,1720.33,W,3524,313,visa,icloud.com,mobile,Linux / Proxy,1
+3000350,27.21,R,17047,516,discover,yahoo.com,mobile,iOS Device,0
+3000351,12.49,R,15662,213,mastercard,icloud.com,mobile,iOS Device,0
+3000352,47.33,H,6439,311,visa,gmail.com,desktop,Windows,0
+3000353,63.96,R,6924,490,mastercard,outlook.com,mobile,Android,0
+3000354,63.73,W,13501,193,visa,yahoo.com,mobile,iOS Device,0
+3000355,52.52,C,17525,177,visa,gmail.com,mobile,iOS Device,0
+3000356,15.58,C,6714,499,mastercard,yahoo.com,mobile,Android,0
+3000357,59.82,H,17622,243,discover,gmail.com,mobile,Android,0
+3000358,486.93,W,15028,591,visa,yahoo.com,desktop,Windows,0
+3000359,22.19,H,15932,489,visa,outlook.com,mobile,Android,0
+3000360,174.9,H,16437,533,mastercard,yahoo.com,mobile,Android,0
+3000361,119.81,H,13996,552,american express,icloud.com,mobile,Android,0
+3000362,158.84,W,12091,292,american express,yahoo.com,desktop,Windows,0
+3000363,115.67,R,4867,453,discover,yahoo.com,mobile,iOS Device,0
+3000364,153.21,W,4261,250,mastercard,gmail.com,desktop,MacOS,0
+3000365,67.17,C,2902,175,american express,icloud.com,desktop,Windows,0
+3000366,38.49,R,3520,484,american express,icloud.com,desktop,Windows,0
+3000367,69.72,W,16604,318,mastercard,gmail.com,mobile,iOS Device,0
+3000368,13.41,C,7421,592,mastercard,yahoo.com,mobile,Android,0
+3000369,200.15,C,5309,284,american express,outlook.com,mobile,iOS Device,0
+3000370,120.11,H,13667,242,american express,icloud.com,desktop,MacOS,0
+3000371,151.66,H,13822,260,visa,outlook.com,desktop,Windows,0
+3000372,33.85,W,8719,292,american express,gmail.com,mobile,iOS Device,0
+3000373,89.68,R,12528,168,mastercard,outlook.com,desktop,Windows,0
+3000374,13.16,R,10850,201,mastercard,outlook.com,desktop,Windows,0
+3000375,57.88,W,9418,372,visa,outlook.com,desktop,MacOS,0
+3000376,831.01,W,11614,489,visa,protonmail.com,mobile,Linux / Proxy,1
+3000377,122.16,W,16203,363,american express,yahoo.com,desktop,MacOS,0
+3000378,21.32,H,16104,541,american express,icloud.com,mobile,iOS Device,0
+3000379,736.61,W,11412,132,visa,protonmail.com,mobile,Android,1
+3000380,21.37,W,5694,408,american express,icloud.com,mobile,Android,0
+3000381,12.13,H,12299,133,mastercard,yahoo.com,desktop,MacOS,0
+3000382,16.0,W,14437,107,visa,outlook.com,desktop,Windows,0
+3000383,19.52,R,16535,327,mastercard,yahoo.com,mobile,Android,0
+3000384,77.86,R,14346,489,mastercard,icloud.com,desktop,MacOS,0
+3000385,48.33,W,10247,495,discover,outlook.com,desktop,MacOS,0
+3000386,93.04,R,1025,122,mastercard,outlook.com,desktop,MacOS,0
+3000387,170.79,C,5746,521,discover,icloud.com,desktop,MacOS,0
+3000388,1586.59,W,13612,557,mastercard,protonmail.com,desktop,Windows,1
+3000389,38.8,W,15538,295,visa,yahoo.com,mobile,iOS Device,0
+3000390,42.76,H,5642,458,visa,icloud.com,mobile,iOS Device,0
+3000391,41.43,H,13685,325,visa,icloud.com,mobile,iOS Device,0
+3000392,2315.36,W,16105,581,visa,protonmail.com,mobile,Linux / Proxy,1
+3000393,19.58,C,4255,116,visa,icloud.com,desktop,MacOS,0
+3000394,117.56,C,16941,268,mastercard,outlook.com,desktop,Windows,0
+3000395,241.55,C,3944,372,american express,icloud.com,desktop,Windows,0
+3000396,32.34,C,1135,513,visa,outlook.com,mobile,iOS Device,0
+3000397,60.97,C,9396,598,american express,gmail.com,desktop,MacOS,0
+3000398,75.41,C,13927,490,american express,gmail.com,desktop,MacOS,0
+3000399,16.65,H,10942,391,discover,gmail.com,desktop,MacOS,0
+3000400,23.63,R,2768,564,american express,outlook.com,mobile,Android,0
+3000401,51.33,W,7590,486,mastercard,outlook.com,desktop,Windows,0
+3000402,15.72,C,4896,188,american express,yahoo.com,desktop,MacOS,0
+3000403,72.07,W,11567,547,discover,outlook.com,mobile,iOS Device,0
+3000404,393.59,W,3632,218,visa,protonmail.com,mobile,Linux / Proxy,1
+3000405,20.79,W,6119,471,discover,gmail.com,desktop,MacOS,0
+3000406,14.49,W,17265,130,mastercard,icloud.com,mobile,Android,0
+3000407,33.02,R,16048,434,visa,icloud.com,mobile,iOS Device,0
+3000408,56.89,R,2749,115,discover,icloud.com,mobile,Android,0
+3000409,177.38,H,16412,375,american express,icloud.com,desktop,MacOS,0
+3000410,18.2,C,15388,272,american express,yahoo.com,desktop,Windows,0
+3000411,125.21,W,9452,599,american express,outlook.com,mobile,iOS Device,0
+3000412,238.91,H,17738,521,american express,icloud.com,mobile,Android,0
+3000413,38.59,W,17737,318,visa,yahoo.com,mobile,iOS Device,0
+3000414,215.88,C,15340,161,american express,icloud.com,desktop,MacOS,0
+3000415,146.63,R,11392,513,american express,gmail.com,mobile,Android,0
+3000416,2232.8,C,4960,251,mastercard,protonmail.com,desktop,MacOS,1
+3000417,49.2,H,6546,494,discover,outlook.com,desktop,Windows,0
+3000418,16.84,C,14560,428,visa,gmail.com,mobile,iOS Device,0
+3000419,88.36,C,2225,162,discover,gmail.com,desktop,MacOS,0
+3000420,98.26,R,10690,252,mastercard,gmail.com,desktop,Windows,0
+3000421,85.13,W,16763,552,visa,gmail.com,desktop,Windows,0
+3000422,42.14,C,4490,210,discover,yahoo.com,mobile,iOS Device,0
+3000423,34.53,R,3720,433,visa,icloud.com,desktop,MacOS,0
+3000424,76.16,H,14936,391,visa,icloud.com,mobile,iOS Device,0
+3000425,29.31,C,15328,239,discover,outlook.com,mobile,iOS Device,0
+3000426,60.23,C,10760,442,visa,gmail.com,desktop,Windows,0
+3000427,65.86,C,12612,463,visa,outlook.com,mobile,Android,0
+3000428,40.83,H,6609,241,american express,icloud.com,desktop,MacOS,0
+3000429,11.68,H,12561,137,discover,yahoo.com,desktop,MacOS,0
+3000430,21.12,R,2120,207,discover,yahoo.com,mobile,iOS Device,0
+3000431,48.11,C,11040,354,american express,icloud.com,desktop,MacOS,0
+3000432,148.92,C,15312,203,visa,yahoo.com,desktop,MacOS,0
+3000433,83.44,R,4983,284,mastercard,outlook.com,desktop,Windows,0
+3000434,51.3,C,14898,332,american express,icloud.com,mobile,Android,0
+3000435,201.76,H,15213,478,discover,gmail.com,desktop,MacOS,0
+3000436,104.61,C,2428,132,discover,icloud.com,desktop,Windows,0
+3000437,38.85,R,16628,510,mastercard,yahoo.com,desktop,MacOS,0
+3000438,131.55,W,16542,422,american express,yahoo.com,desktop,MacOS,0
+3000439,149.72,C,1185,490,american express,outlook.com,mobile,Android,0
+3000440,24.67,C,17006,484,american express,yahoo.com,desktop,MacOS,0
+3000441,1767.47,W,6125,476,discover,outlook.com,mobile,Linux / Proxy,1
+3000442,42.29,C,9652,394,american express,gmail.com,mobile,iOS Device,0
+3000443,72.46,R,17881,403,discover,icloud.com,mobile,Android,0
+3000444,13.14,C,9912,371,american express,gmail.com,desktop,Windows,0
+3000445,12.67,R,3355,273,discover,gmail.com,mobile,iOS Device,0
+3000446,64.16,R,12637,542,visa,icloud.com,desktop,MacOS,0
+3000447,53.24,C,7409,267,american express,icloud.com,mobile,Android,0
+3000448,62.12,C,17199,444,american express,outlook.com,mobile,iOS Device,0
+3000449,199.08,R,15582,399,discover,icloud.com,desktop,Windows,0
+3000450,142.07,R,4825,292,mastercard,outlook.com,desktop,MacOS,0
+3000451,145.8,R,11677,468,visa,yahoo.com,mobile,iOS Device,0
+3000452,109.87,R,1561,587,discover,outlook.com,desktop,Windows,0
+3000453,81.41,W,13393,290,mastercard,yahoo.com,mobile,Android,0
+3000454,16.03,H,10096,578,discover,outlook.com,desktop,MacOS,0
+3000455,49.25,H,15590,272,visa,icloud.com,desktop,MacOS,0
+3000456,2533.42,W,3416,192,mastercard,protonmail.com,mobile,iOS Device,1
+3000457,29.74,H,6719,188,mastercard,outlook.com,desktop,Windows,0
+3000458,86.55,R,16003,107,american express,gmail.com,mobile,iOS Device,0
+3000459,136.42,W,9936,287,mastercard,outlook.com,desktop,Windows,0
+3000460,14.75,C,17795,213,american express,gmail.com,mobile,Android,0
+3000461,66.22,C,15187,531,mastercard,outlook.com,desktop,MacOS,0
+3000462,17.34,C,15724,163,discover,yahoo.com,mobile,Android,0
+3000463,370.25,C,13333,311,mastercard,icloud.com,desktop,Windows,0
+3000464,112.81,W,17127,290,visa,gmail.com,mobile,iOS Device,0
+3000465,2412.22,W,10147,495,visa,outlook.com,mobile,Linux / Proxy,1
+3000466,36.24,W,14188,287,american express,outlook.com,mobile,Android,0
+3000467,129.98,C,4629,493,visa,yahoo.com,mobile,Android,0
+3000468,39.13,H,17494,587,mastercard,gmail.com,mobile,iOS Device,0
+3000469,26.35,C,15599,182,discover,gmail.com,mobile,Android,0
+3000470,128.72,H,9645,260,mastercard,yahoo.com,desktop,Windows,0
+3000471,70.04,C,10940,453,american express,icloud.com,desktop,Windows,0
+3000472,18.84,H,1909,348,discover,outlook.com,mobile,iOS Device,0
+3000473,1918.83,W,10465,321,american express,protonmail.com,mobile,Android,1
+3000474,18.95,R,1881,411,visa,icloud.com,mobile,Android,0
+3000475,20.49,W,8163,504,visa,outlook.com,desktop,MacOS,0
+3000476,90.36,C,12780,554,visa,gmail.com,mobile,iOS Device,0
+3000477,52.86,C,15306,326,discover,icloud.com,mobile,iOS Device,0
+3000478,39.36,H,16707,457,mastercard,gmail.com,desktop,MacOS,0
+3000479,51.94,W,12252,369,mastercard,gmail.com,desktop,MacOS,0
+3000480,31.92,R,5118,547,mastercard,outlook.com,mobile,iOS Device,0
+3000481,91.62,R,16918,214,mastercard,outlook.com,desktop,Windows,0
+3000482,138.87,H,15144,232,visa,icloud.com,desktop,Windows,0
+3000483,146.1,H,5854,103,mastercard,yahoo.com,desktop,MacOS,0
+3000484,43.55,R,14255,155,visa,gmail.com,desktop,MacOS,0
+3000485,99.03,R,2601,308,american express,yahoo.com,mobile,Android,0
+3000486,14.27,H,6565,436,discover,outlook.com,desktop,Windows,0
+3000487,45.18,H,9301,421,american express,icloud.com,desktop,Windows,0
+3000488,10.25,R,10541,259,american express,outlook.com,desktop,MacOS,0
+3000489,78.23,H,4255,134,discover,icloud.com,desktop,Windows,0
+3000490,125.06,C,3570,467,discover,icloud.com,mobile,iOS Device,0
+3000491,153.47,H,1744,376,mastercard,outlook.com,mobile,Android,0
+3000492,19.52,W,17949,245,mastercard,outlook.com,mobile,Android,0
+3000493,50.67,H,8034,491,mastercard,outlook.com,desktop,MacOS,0
+3000494,225.07,W,12399,215,discover,yahoo.com,mobile,Android,0
+3000495,2282.42,W,6502,540,mastercard,yahoo.com,mobile,Linux / Proxy,1
+3000496,155.91,H,14613,331,american express,icloud.com,desktop,Windows,0
+3000497,25.24,C,15008,213,discover,outlook.com,desktop,MacOS,0
+3000498,32.29,C,14228,450,discover,outlook.com,mobile,iOS Device,0
+3000499,103.53,R,9973,258,american express,icloud.com,desktop,MacOS,0
+3000500,86.83,R,3480,156,american express,yahoo.com,desktop,MacOS,0

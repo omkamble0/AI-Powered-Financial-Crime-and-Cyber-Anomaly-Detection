@@ -1042,7 +1042,10 @@ def get_sample_dataset_analysis(dataset_type: str):
         "creditcard": "sample_creditcard_pca.csv",
         "ecommerce": "sample_ecommerce_orders.csv",
         "wire": "sample_p2p_wire_transfers.csv",
-        "corporate": "sample_private_corporate_cards.csv"
+        "corporate": "sample_private_corporate_cards.csv",
+        "paysim": "sample_paysim_mobile_money.csv",
+        "ieeecis": "sample_ieeecis_ecommerce.csv",
+        "creditcard_full": "creditcard.csv"
     }
     filename = file_map.get(dataset_type, "sample_creditcard_pca.csv")
     filepath = os.path.join(DATA_DIR, filename)
@@ -1052,7 +1055,12 @@ def get_sample_dataset_analysis(dataset_type: str):
         from data.sample_datasets import generate_samples
         generate_samples()
 
-    df = pd.read_csv(filepath)
+    if dataset_type == "creditcard_full" and os.path.exists(filepath):
+        # Fast 5,000-row slice from Kaggle creditcard.csv for responsive interactive testing
+        df = pd.read_csv(filepath, nrows=5000)
+    else:
+        df = pd.read_csv(filepath)
+
     analysis = universal_detector.analyze_dataset(df)
     analysis["metadata"]["filename"] = filename
 

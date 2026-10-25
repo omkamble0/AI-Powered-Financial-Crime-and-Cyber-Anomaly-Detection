@@ -657,6 +657,9 @@ function initSampleButtons() {
 async function loadSampleDataset(sampleType) {
   const sampleLabels = {
     creditcard: "Credit Card Transactions (300 rows)",
+    creditcard_full: "Kaggle Credit Card Benchmark (5,000 rows)",
+    paysim: "Kaggle PaySim Mobile Money & AML (500 rows)",
+    ieeecis: "Kaggle IEEE-CIS Fraud Benchmark (500 rows)",
     ecommerce: "E-Commerce Checkouts (500 rows)",
     wire: "P2P Wire Transfers (400 rows)",
     corporate: "Private Corporate & Fleet Cards (450 rows)"
