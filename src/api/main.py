@@ -95,6 +95,17 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    """Enforces OWASP-standard HTTP defense-in-depth headers across all responses."""
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+    return response
+
+
 # =============================================================================
 # AUTHENTICATION RATE LIMITING & BRUTE FORCE DEFENSE (CWE-307)
 # =============================================================================

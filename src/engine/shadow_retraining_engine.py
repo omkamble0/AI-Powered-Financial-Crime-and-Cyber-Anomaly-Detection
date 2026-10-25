@@ -163,9 +163,9 @@ class ShadowRetrainingEngine:
                 "canary_split_pct": 0.0,
             }
 
-        # Determine bucket (0-99)
+        # Determine bucket (0-99) using SHA-256 (CWE-328 remediation)
         if txn_id:
-            h = int(hashlib.md5(txn_id.encode()).hexdigest(), 16)
+            h = int(hashlib.sha256(txn_id.encode()).hexdigest(), 16)
             bucket = (h % 10000) / 100.0
         else:
             bucket = float(np.random.uniform(0.0, 100.0))

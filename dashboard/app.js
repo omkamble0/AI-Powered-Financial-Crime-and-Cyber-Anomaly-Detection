@@ -19,6 +19,19 @@ let chartDriftDeciles = null;
 let chartBenchmarkLatency = null;
 let activeFilter = "all";
 
+// ==========================================
+// SECURE HTML ESCAPE UTILITY (CWE-79 / XSS DEFENSE)
+// ==========================================
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
+  return String(str)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   initTabs();
   initCharts();
@@ -852,8 +865,8 @@ function renderSchemaTable(profiles) {
     const badgeClass = isNum ? "chip-approved" : "chip-warning";
 
     tr.innerHTML = `
-      <td style="font-weight: 700; color: #059669;">${col.name}</td>
-      <td><span class="status-chip ${badgeClass}">${col.dtype}</span></td>
+      <td style="font-weight: 700; color: #059669;">${escapeHtml(col.name)}</td>
+      <td><span class="status-chip ${badgeClass}">${escapeHtml(col.dtype)}</span></td>
       <td>${col.null_count}</td>
       <td style="color: ${col.null_pct > 5 ? '#e11d48' : '#475569'}; font-weight: 600;">${col.null_pct}%</td>
       <td>${col.unique_count.toLocaleString()}</td>
@@ -911,14 +924,14 @@ function renderRecordsTable() {
       <td>
         <div style="display: flex; align-items: center; gap: 8px;">
           <span style="font-size: 16px;">${icon}</span>
-          <strong style="color: #0f172a; font-family: var(--font-mono); font-size: 12px;">${r.transaction_id}</strong>
+          <strong style="color: #0f172a; font-family: var(--font-mono); font-size: 12px;">${escapeHtml(r.transaction_id)}</strong>
         </div>
       </td>
-      <td>${r.user_id}</td>
+      <td>${escapeHtml(r.user_id)}</td>
       <td style="font-weight: 800; color: #0f172a;">$${parseFloat(r.amount).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
       <td style="color: ${isCritical ? '#e11d48' : '#059669'}; font-weight: 800; font-family: var(--font-mono);">${r.risk_score}</td>
       <td><span class="status-chip ${chipClass}">${chipLabel}</span></td>
-      <td style="font-size: 12px; color: #64748b; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${reasonSnippet}</td>
+      <td style="font-size: 12px; color: #64748b; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(reasonSnippet)}</td>
       <td><button type="button" class="btn-inspect btn-inspect-row">Audit</button></td>
     `;
 
@@ -966,7 +979,7 @@ function showToast(message, type = "success", duration = 3500) {
 
   toast.innerHTML = `
     <span class="toast-icon">${icon}</span>
-    <span class="toast-text">${message}</span>
+    <span class="toast-text">${escapeHtml(message)}</span>
   `;
 
   container.appendChild(toast);
@@ -1281,9 +1294,9 @@ function appendLiveRadarRow(tx) {
   tr.innerHTML = `
     <td style="font-family: var(--font-mono); font-size: 11px;">${timeStr}</td>
     <td>${domainBadge}</td>
-    <td style="color: #059669; font-family: var(--font-mono); font-weight: 700; font-size: 11px;">${eventId}</td>
-    <td style="font-weight: 600; font-size: 12px; color: #0f172a;">${actor}</td>
-    <td style="font-size: 12px; color: #334155; font-weight: 600;">${actDesc}</td>
+    <td style="color: #059669; font-family: var(--font-mono); font-weight: 700; font-size: 11px;">${escapeHtml(eventId)}</td>
+    <td style="font-weight: 600; font-size: 12px; color: #0f172a;">${escapeHtml(actor)}</td>
+    <td style="font-size: 12px; color: #334155; font-weight: 600;">${escapeHtml(actDesc)}</td>
     <td style="color: ${scoreColor}; font-weight: 800; font-family: var(--font-mono);">${scoreFormatted}</td>
     <td><span class="status-chip ${chipClass}">${chipLabel}</span></td>
     <td style="color: #64748b; font-family: var(--font-mono); font-size: 11px;">${latencyVal}</td>
@@ -1457,8 +1470,8 @@ function renderSandboxAudit(data) {
       div.className = "xai-row";
       div.innerHTML = `
         <div>
-          <strong style="color: #059669;">${item.feature}</strong>: ${item.title}
-          <div style="font-size: 11px; color: #64748b;">Value: ${item.value} (${item.signal})</div>
+          <strong style="color: #059669;">${escapeHtml(item.feature)}</strong>: ${escapeHtml(item.title)}
+          <div style="font-size: 11px; color: #64748b;">Value: ${escapeHtml(item.value)} (${escapeHtml(item.signal)})</div>
         </div>
         <span style="font-weight: 800; color: #b45309;">${item.contribution_percentage}%</span>
       `;
@@ -1693,10 +1706,10 @@ function setCurrentUser(user) {
   localStorage.setItem("fincipher_user", JSON.stringify(user));
 
   const elTitle = document.getElementById("welcomeTitle");
-  if (elTitle) elTitle.innerHTML = `Welcome Back, <span style="color: #059669;">${user.full_name}</span>`;
+  if (elTitle) elTitle.innerHTML = `Welcome Back, <span style="color: #059669;">${escapeHtml(user.full_name)}</span>`;
 
   const elSub = document.getElementById("welcomeSubtitle");
-  if (elSub) elSub.innerHTML = `Logged in as <strong>${user.role}</strong> • Real-time transaction scoring and explainable AI active.`;
+  if (elSub) elSub.innerHTML = `Logged in as <strong>${escapeHtml(user.role)}</strong> • Real-time transaction scoring and explainable AI active.`;
 
   const elNavName = document.getElementById("navUserName");
   if (elNavName) elNavName.textContent = user.full_name;
@@ -1805,7 +1818,7 @@ function initCyberDefenseSuite() {
           banner.style.borderColor = "rgba(244, 63, 94, 0.4)";
         }
         if (statusText) {
-          statusText.innerHTML = `<strong style="color: #f43f5e;">🚨 BOTNET CARDING BURST INTERCEPTED:</strong> ${data.cards_tested} unique cards tested in <400ms from IP <strong>${data.attacker_ip}</strong>. IP automatically quarantined!`;
+          statusText.innerHTML = `<strong style="color: #f43f5e;">🚨 BOTNET CARDING BURST INTERCEPTED:</strong> ${data.cards_tested} unique cards tested in <400ms from IP <strong>${escapeHtml(data.attacker_ip)}</strong>. IP automatically quarantined!`;
         }
         if (threatPill) {
           threatPill.textContent = "ATTACK MITIGATED";
@@ -2388,7 +2401,7 @@ function initCyberCopilot() {
     } catch (err) {
       console.error("LangChain agent error:", err);
       if (lcArea) {
-        lcArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ LangChain Agent Error: ${err.message}</div>`;
+        lcArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ LangChain Agent Error: ${escapeHtml(err.message)}</div>`;
       }
     }
   };
@@ -2429,7 +2442,7 @@ function initCyberCopilot() {
       } catch (err) {
         console.error("Dossier generation error:", err);
         if (resultArea) {
-          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ Error synthesizing dossier: ${err.message}</div>`;
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 20px; text-align: center;">⚠️ Error synthesizing dossier: ${escapeHtml(err.message)}</div>`;
         }
       } finally {
         btnDossier.disabled = false;
@@ -2467,7 +2480,7 @@ function initCyberCopilot() {
       } catch (err) {
         console.error("SAR generation error:", err);
         if (previewArea) {
-          previewArea.innerHTML = `<span style="color: #f43f5e;">⚠️ Error compiling SAR: ${err.message}</span>`;
+          previewArea.innerHTML = `<span style="color: #f43f5e;">⚠️ Error compiling SAR: ${escapeHtml(err.message)}</span>`;
         }
       } finally {
         btnSAR.disabled = false;
@@ -2535,7 +2548,7 @@ function initCyberCopilot() {
       } catch (err) {
         console.error("Threat hunt error:", err);
         if (resultArea) {
-          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Threat hunt failed: ${err.message}</div>`;
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Threat hunt failed: ${escapeHtml(err.message)}</div>`;
         }
       } finally {
         btnThreatHunt.disabled = false;
@@ -2588,7 +2601,7 @@ function initCyberCopilot() {
       } catch (err) {
         console.error("Red team error:", err);
         if (resultArea) {
-          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Red-team simulation failed: ${err.message}</div>`;
+          resultArea.innerHTML = `<div style="color: #f43f5e; padding: 15px;">⚠️ Red-team simulation failed: ${escapeHtml(err.message)}</div>`;
         }
       } finally {
         btnRedTeam.disabled = false;
@@ -2633,8 +2646,8 @@ function renderIncidentDossier(dossier) {
   resultArea.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 8px; margin-bottom: 10px;">
       <div>
-        <span style="font-family: var(--font-mono); font-weight: 800; color: #fff;">${dossier.incident_id}</span>
-        <span style="color: var(--text-muted); font-size: 11px; margin-left: 6px;">${dossier.attack_vector || 'Cyber Anomaly'}</span>
+        <span style="font-family: var(--font-mono); font-weight: 800; color: #fff;">${escapeHtml(dossier.incident_id)}</span>
+        <span style="color: var(--text-muted); font-size: 11px; margin-left: 6px;">${escapeHtml(dossier.attack_vector || "Cyber Anomaly")}</span>
       </div>
       <div style="display: flex; gap: 6px; align-items: center;">
         <span class="status-chip ${riskBadge}">${dossier.risk_level}</span>
@@ -2644,10 +2657,10 @@ function renderIncidentDossier(dossier) {
 
     <div style="margin-bottom: 10px;">
       <div style="font-size: 13px; font-weight: 700; color: #f8fafc; margin-bottom: 4px;">
-        🚨 ${dossier.threat_classification}
+        🚨 ${escapeHtml(dossier.threat_classification)}
       </div>
       <p style="margin: 0; line-height: 1.4; color: #cbd5e1;">
-        ${dossier.executive_summary}
+        ${escapeHtml(dossier.executive_summary)}
       </p>
     </div>
 
@@ -2766,18 +2779,18 @@ function renderRedTeamResult(data) {
   resultArea.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
       <div>
-        <strong style="font-size: 13px; color: #f43f5e;">🎯 ${prof.name}</strong>
-        <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">${prof.technique}</div>
+        <strong style="font-size: 13px; color: #f43f5e;">🎯 ${escapeHtml(prof.name)}</strong>
+        <div style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">${escapeHtml(prof.technique)}</div>
       </div>
       <div>${liveBadge}</div>
     </div>
 
     <div style="font-size: 11px; color: #cbd5e1; margin-bottom: 6px; line-height: 1.4;">
-      <strong style="color: var(--accent-cyan);">Evasion Strategy:</strong> ${prof.evasion_strategy}
+      <strong style="color: var(--accent-cyan);">Evasion Strategy:</strong> ${escapeHtml(prof.evasion_strategy)}
     </div>
 
     <div style="font-size: 11px; color: var(--text-muted); margin-bottom: 6px;">
-      <strong>Defense Objective:</strong> ${prof.expected_defense}
+      <strong>Defense Objective:</strong> ${escapeHtml(prof.expected_defense)}
     </div>
 
     ${liveDetails}
@@ -2832,11 +2845,11 @@ function renderLangChainResult(data) {
     <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 10px;">
       <div>
         <div style="display: flex; align-items: center; gap: 8px;">
-          <strong style="color: #fff; font-size: 14px; font-family: var(--font-mono);">${data.transaction_id}</strong>
+          <strong style="color: #fff; font-size: 14px; font-family: var(--font-mono);">${escapeHtml(data.transaction_id)}</strong>
           <span class="status-chip ${dispositionChip}" style="font-weight: 800;">${data.zero_trust_defense_action}</span>
         </div>
         <div style="font-size: 12px; color: #f87171; font-weight: 700; margin-top: 4px;">
-          🎯 ${data.mitre_attack_classification}
+          🎯 ${escapeHtml(data.mitre_attack_classification)}
         </div>
       </div>
 
@@ -4788,21 +4801,21 @@ async function fetchDynamicRules() {
       tr.innerHTML = `
         <td>
           <label class="rule-switch">
-            <input type="checkbox" ${checkedAttr} onchange="toggleDynamicRule('${r.rule_id}', this.checked)" />
+            <input type="checkbox" ${checkedAttr} onchange="toggleDynamicRule('${escapeHtml(r.rule_id)}', this.checked)" />
             <span class="rule-slider"></span>
           </label>
         </td>
         <td>
-          <code style="font-family: var(--font-mono); font-weight: 700; color: #0f172a;">${r.rule_id}</code>
+          <code style="font-family: var(--font-mono); font-weight: 700; color: #0f172a;">${escapeHtml(r.rule_id)}</code>
         </td>
         <td>
-          <div style="font-weight: 700; color: #1e293b;">${r.name}</div>
-          <div style="font-size: 11px; color: var(--text-muted);">${r.reason}</div>
+          <div style="font-weight: 700; color: #1e293b;">${escapeHtml(r.name)}</div>
+          <div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(r.reason)}</div>
         </td>
         <td><span class="rule-tag ${catClass}">${r.category || 'CUSTOM'}</span></td>
         <td>
           <code style="background: var(--bg-subtle); padding: 2px 6px; border-radius: 4px; font-family: var(--font-mono); font-size: 11px;">
-            ${r.field} ${r.operator} ${r.threshold}
+            ${escapeHtml(r.field)} ${escapeHtml(r.operator)} ${escapeHtml(r.threshold)}
           </code>
         </td>
         <td style="font-weight: 800; color: var(--color-amber-dark); font-family: var(--font-mono);">
@@ -5963,10 +5976,10 @@ function initLiveOpsCockpit() {
         
         elNarrative.innerHTML = `
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
-            <strong style="color: #0f172a; font-size: 12px;">${scenarioName}</strong>
+            <strong style="color: #0f172a; font-size: 12px;">${escapeHtml(scenarioName)}</strong>
             <div style="display: flex; gap: 4px; flex-wrap: wrap;">${tagsHtml}</div>
           </div>
-          <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">${narrativeText}</div>
+          <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">${escapeHtml(narrativeText)}</div>
         `;
       }
 
@@ -7322,12 +7335,12 @@ async function searchWatchlists() {
       resultArea.innerHTML = `
         <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 6px; padding: 8px 10px; margin-top: 4px; display: flex; align-items: center; gap: 8px;">
           <span style="color: #16a34a; font-weight: 800; font-size: 12px;">✓ [CLEAN]</span>
-          <span style="font-size: 11px; color: #166534;">Indicator "${query}" shows zero active matches across OFAC, Tor exit nodes, C2 bots, or mixer registries.</span>
+          <span style="font-size: 11px; color: #166534;">Indicator "${escapeHtml(query)}" shows zero active matches across OFAC, Tor exit nodes, C2 bots, or mixer registries.</span>
         </div>
       `;
     }
   } catch (err) {
-    resultArea.innerHTML = `<span style="color: #b91c1c;">Scan error: ${err.message}</span>`;
+    resultArea.innerHTML = `<span style="color: #b91c1c;">Scan error: ${escapeHtml(err.message)}</span>`;
   }
 }
 
@@ -7374,9 +7387,9 @@ async function refreshSarFilings() {
 
       return `
         <tr>
-          <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1; white-space: nowrap;">${f.filing_id}</td>
-          <td style="font-weight: 600; white-space: nowrap;">Case #${f.case_id || '--'}</td>
-          <td style="font-weight: 600; color: #0f172a; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${f.primary_subject}">${f.primary_subject}</td>
+          <td style="font-family: var(--font-mono); font-weight: 700; color: #6366f1; white-space: nowrap;">${escapeHtml(f.filing_id)}</td>
+          <td style="font-weight: 600; white-space: nowrap;">Case #${escapeHtml(f.case_id || "--")}</td>
+          <td style="font-weight: 600; color: #0f172a; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${escapeHtml(f.primary_subject)}">${escapeHtml(f.primary_subject)}</td>
           <td style="font-family: var(--font-mono); font-weight: 700; color: #0f172a; white-space: nowrap;">$${amt}</td>
           <td><span class="status-chip ${statusClass}" style="font-size: 9px; white-space: nowrap;">${f.status}</span></td>
           <td style="font-family: var(--font-mono); font-size: 10px; color: #0284c7; white-space: nowrap;">${receipt}</td>
