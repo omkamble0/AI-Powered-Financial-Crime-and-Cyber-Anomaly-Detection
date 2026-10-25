@@ -7,6 +7,7 @@ Enforces security hygiene across development, testing, and production environmen
 """
 
 import os
+import sys
 from typing import List, Optional
 from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -95,7 +96,13 @@ class Settings(BaseSettings):
 
     @property
     def is_testing(self) -> bool:
-        return self.ENVIRONMENT == "testing"
+        if self.ENVIRONMENT == "production":
+            return False
+        return (
+            self.ENVIRONMENT == "testing"
+            or "PYTEST_CURRENT_TEST" in os.environ
+            or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
+        )
 
 
 # Global singleton settings

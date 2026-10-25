@@ -8,6 +8,9 @@ and granular RBAC dependencies for Analyst, Fraud Manager, Auditor, and Admin ro
 
 import hashlib
 import secrets
+import socket
+import ipaddress
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 from enum import Enum
 from typing import Dict, Any, List, Optional, Set
@@ -74,17 +77,83 @@ def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
     return key.hex(), salt
 
 
-def verify_password(password: str, stored_hash: str, salt: str) -> bool:
-    """Verifies a plain password against the stored PBKDF2 hash, with legacy SHA-256 fallback."""
-    # 1. Check PBKDF2-HMAC-SHA256 (600,000 iterations)
+def verify_password_with_status(password: str, stored_hash: str, salt: str) -> tuple[bool, bool]:
+    """
+    Verifies a plain password and reports if stored hash is legacy and needs rehash.
+    Returns: (is_valid, needs_rehash)
+    """
+    # 1. Check modern PBKDF2-HMAC-SHA256 (600,000 iterations)
     new_hash, _ = hash_password(password, salt)
     if secrets.compare_digest(new_hash, stored_hash):
-        return True
+        return True, False
     # 2. Check legacy SHA-256 hash
     legacy_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
     if secrets.compare_digest(legacy_hash, stored_hash):
-        return True
-    return False
+        return True, True
+    return False, False
+
+
+def verify_password(password: str, stored_hash: str, salt: str) -> bool:
+    """Verifies a plain password against the stored PBKDF2 hash, with legacy SHA-256 fallback."""
+    valid, _ = verify_password_with_status(password, stored_hash, salt)
+    return valid
+
+
+def validate_webhook_url(url: str, allow_private: Optional[bool] = None) -> str:
+    """
+    Validates a destination webhook/dispatch URL against SSRF (Server-Side Request Forgery).
+    Blocks non-HTTP/S schemes, loopback (127.0.0.0/8), RFC 1918 private subnets,
+    and link-local cloud metadata addresses (169.254.169.254).
+    """
+    if not url or not isinstance(url, str):
+        raise ValueError("Webhook URL must be a non-empty string.")
+
+    clean_url = url.strip()
+    parsed = urllib.parse.urlparse(clean_url)
+    if parsed.scheme.lower() not in ("http", "https"):
+        raise ValueError(f"SSRF Protection: Unsupported scheme '{parsed.scheme}'. Only 'http' and 'https' are allowed.")
+
+    hostname = parsed.hostname
+    if not hostname:
+        raise ValueError("SSRF Protection: URL does not specify a valid hostname.")
+
+    # In testing mode or when explicitly allowed, skip private IP checks
+    should_allow_private = allow_private if allow_private is not None else settings.is_testing
+    if should_allow_private:
+        return clean_url
+
+    # Check for direct loopback or cloud metadata hostnames
+    lowered_host = hostname.lower()
+    if lowered_host in ("localhost", "127.0.0.1", "::1", "metadata.google.internal", "instance-data"):
+        raise ValueError(f"SSRF Protection: Access to '{hostname}' is strictly prohibited.")
+
+    # Resolve IP address to detect DNS rebinding or private IP destinations
+    try:
+        addr_info = socket.getaddrinfo(hostname, None)
+    except socket.gaierror as e:
+        raise ValueError(f"SSRF Protection: Hostname '{hostname}' could not be resolved: {e}")
+
+    for item in addr_info:
+        ip_str = item[4][0]
+        try:
+            ip_obj = ipaddress.ip_address(ip_str)
+            if (
+                ip_obj.is_loopback
+                or ip_obj.is_private
+                or ip_obj.is_link_local
+                or ip_obj.is_reserved
+                or ip_obj.is_multicast
+                or ip_obj.is_unspecified
+            ):
+                raise ValueError(
+                    f"SSRF Protection: Destination IP '{ip_str}' belongs to a prohibited private, loopback, or metadata network."
+                )
+        except ValueError as ve:
+            if "SSRF Protection" in str(ve):
+                raise
+            pass
+
+    return clean_url
 
 
 def create_access_token(

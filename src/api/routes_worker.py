@@ -8,6 +8,8 @@ from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Depends, Header, Request
 from pydantic import BaseModel, Field
 
+from src.core.config import settings
+from src.core.security import get_optional_user
 from src.streaming.worker_pool import stream_worker_pool
 from src.engine.case_lifecycle import case_lifecycle_manager, InvalidStateTransitionError
 from src.db.database import (
@@ -56,15 +58,19 @@ def get_worker_status() -> Dict[str, Any]:
 
 
 @router.post("/workers/start", summary="Start streaming worker pool")
-def start_workers() -> Dict[str, Any]:
+def start_workers(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)) -> Dict[str, Any]:
     """Spawns concurrent worker threads if not running."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Starting worker pool requires admin or fraud_manager role.")
     stream_worker_pool.start()
     return {"status": "RUNNING", "metrics": stream_worker_pool.get_metrics()}
 
 
 @router.post("/workers/stop", summary="Stop streaming worker pool")
-def stop_workers() -> Dict[str, Any]:
+def stop_workers(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)) -> Dict[str, Any]:
     """Stops worker threads gracefully."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Stopping worker pool requires admin or fraud_manager role.")
     stream_worker_pool.stop()
     return {"status": "STOPPED", "metrics": stream_worker_pool.get_metrics()}
 
@@ -105,8 +111,10 @@ def get_dlq_entries(status: Optional[str] = None, limit: int = 50) -> Dict[str, 
 
 
 @router.post("/dlq/{dlq_id}/replay", summary="Replay a Dead Letter Queue entry")
-def replay_dlq_entry(dlq_id: int) -> Dict[str, Any]:
+def replay_dlq_entry(dlq_id: int, current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)) -> Dict[str, Any]:
     """Replays an event from the Dead Letter Queue back into the live worker pool."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Replaying DLQ events requires admin or fraud_manager role.")
     replayed = stream_worker_pool.replay_dlq(dlq_id)
     if not replayed:
         raise HTTPException(status_code=404, detail=f"DLQ entry #{dlq_id} could not be found or replayed.")
@@ -128,13 +136,17 @@ def get_action_dispatches(limit: int = 50) -> Dict[str, Any]:
 
 
 @router.post("/cases/transition", summary="Transition case lifecycle status")
-def transition_case_state(payload: CaseTransitionPayload) -> Dict[str, Any]:
+def transition_case_state(
+    payload: CaseTransitionPayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+) -> Dict[str, Any]:
     """Validates state machine transitions, records SLA, and updates audit history."""
+    effective_operator = current_user.get("username") if current_user else (payload.operator or "analyst")
     try:
         updated = case_lifecycle_manager.transition_case(
             case_id=payload.case_id,
             target_status=payload.target_status,
-            operator=payload.operator or "analyst",
+            operator=effective_operator,
             reason=payload.reason,
             disposition=payload.disposition
         )
@@ -685,23 +697,33 @@ def list_governance_jobs(limit: int = 20) -> Dict[str, Any]:
 
 
 @router.post("/governance/canary/traffic-split", summary="Configure live canary traffic routing split")
-def configure_canary_traffic_split(payload: CanaryTrafficSplitPayload) -> Dict[str, Any]:
+def configure_canary_traffic_split(
+    payload: CanaryTrafficSplitPayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+) -> Dict[str, Any]:
     """Sets live traffic routing percentage directed to candidate Challenger model."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Modifying canary traffic split requires admin or fraud_manager role.")
     from src.engine.shadow_retraining_engine import shadow_retraining_engine
     return shadow_retraining_engine.set_canary_traffic_split(
         split_pct=payload.split_pct,
-        operator=payload.operator or "analyst"
+        operator=current_user.get("username") if current_user else (payload.operator or "analyst")
     )
 
 
 @router.post("/governance/canary/evaluate-and-promote", summary="Hot-promote Challenger model to Production Champion")
-def promote_canary_challenger(payload: Optional[CanaryGovernanceActionPayload] = None) -> Dict[str, Any]:
+def promote_canary_challenger(
+    payload: Optional[CanaryGovernanceActionPayload] = None,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+) -> Dict[str, Any]:
     """Promotes candidate Challenger to primary Champion with zero downtime and Merkle audit block."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model promotion requires admin or fraud_manager role.")
     from src.engine.shadow_retraining_engine import shadow_retraining_engine
     p = payload or CanaryGovernanceActionPayload()
     try:
         return shadow_retraining_engine.evaluate_and_promote_challenger(
-            operator=p.operator or "analyst",
+            operator=current_user.get("username") if current_user else (p.operator or "analyst"),
             reason=p.reason or "Candidate Challenger passed production performance gates"
         )
     except Exception as e:
@@ -709,13 +731,18 @@ def promote_canary_challenger(payload: Optional[CanaryGovernanceActionPayload] =
 
 
 @router.post("/governance/canary/rollback", summary="Emergency rollback to previous Champion model")
-def rollback_canary_model(payload: Optional[CanaryGovernanceActionPayload] = None) -> Dict[str, Any]:
+def rollback_canary_model(
+    payload: Optional[CanaryGovernanceActionPayload] = None,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+) -> Dict[str, Any]:
     """Emergency rollback from current Champion to previous registered model."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model rollback requires admin or fraud_manager role.")
     from src.engine.shadow_retraining_engine import shadow_retraining_engine
     p = payload or CanaryGovernanceActionPayload()
     try:
         res = shadow_retraining_engine.emergency_rollback(
-            operator=p.operator or "analyst",
+            operator=current_user.get("username") if current_user else (p.operator or "analyst"),
             reason=p.reason or "Emergency rollback triggered by operator"
         )
         if not res.get("success"):

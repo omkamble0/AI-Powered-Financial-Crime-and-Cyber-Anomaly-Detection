@@ -16,7 +16,7 @@ import secrets
 from datetime import datetime, timezone
 from typing import Optional, Dict, Any, List
 
-from src.core.security import hash_password, verify_password, UserRole
+from src.core.security import hash_password, verify_password, verify_password_with_status, UserRole
 
 DATABASE_URL = os.getenv("DATABASE_URL") or os.getenv("SUPABASE_DB_URL")
 IS_POSTGRES = bool(DATABASE_URL and (DATABASE_URL.startswith("postgres://") or DATABASE_URL.startswith("postgresql://")))
@@ -1044,6 +1044,12 @@ def register_user(username: str, email: str, full_name: str, password: str, role
         conn.close()
         raise ValueError("Username or Email is already registered.")
 
+    # Validate and sanitize role to prevent privilege escalation
+    VALID_ROLES = {"analyst", "risk_analyst", "fraud_manager", "fraud_ops_lead", "auditor", "compliance_officer", "admin"}
+    clean_role = (role or "analyst").strip().lower().replace(" ", "_")
+    if clean_role not in VALID_ROLES:
+        clean_role = "analyst"
+
     parts = full_name.strip().split()
     initials = "".join([p[0].upper() for p in parts[:2]]) if parts else "U"
     pwd_hash, salt = hash_password(password)
@@ -1053,13 +1059,13 @@ def register_user(username: str, email: str, full_name: str, password: str, role
             INSERT INTO users (username, email, full_name, password_hash, salt, role, avatar_initials)
             VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param})
             RETURNING id;
-        """, (username.strip().lower(), email.strip().lower(), full_name.strip(), pwd_hash, salt, role, initials))
+        """, (username.strip().lower(), email.strip().lower(), full_name.strip(), pwd_hash, salt, clean_role, initials))
         user_id = cursor.fetchone()["id"]
     else:
         cursor.execute(f"""
             INSERT INTO users (username, email, full_name, password_hash, salt, role, avatar_initials)
             VALUES ({param}, {param}, {param}, {param}, {param}, {param}, {param})
-        """, (username.strip().lower(), email.strip().lower(), full_name.strip(), pwd_hash, salt, role, initials))
+        """, (username.strip().lower(), email.strip().lower(), full_name.strip(), pwd_hash, salt, clean_role, initials))
         user_id = cursor.lastrowid
 
     token = secrets.token_urlsafe(32)
@@ -1072,7 +1078,7 @@ def register_user(username: str, email: str, full_name: str, password: str, role
         "username": username.strip().lower(),
         "email": email.strip().lower(),
         "full_name": full_name.strip(),
-        "role": role,
+        "role": clean_role,
         "avatar_initials": initials,
         "token": token
     }
@@ -1095,9 +1101,18 @@ def authenticate_user(identifier: str, password: str) -> Optional[Dict[str, Any]
         conn.close()
         return None
 
-    if not verify_password(password, row["password_hash"], row["salt"]):
+    is_valid, needs_rehash = verify_password_with_status(password, row["password_hash"], row["salt"])
+    if not is_valid:
         conn.close()
         return None
+
+    # Transparently upgrade legacy single-round SHA-256 hash to modern PBKDF2 (600,000 iterations)
+    if needs_rehash:
+        new_pwd_hash, new_salt = hash_password(password)
+        cursor.execute(
+            f"UPDATE users SET password_hash = {param}, salt = {param} WHERE id = {param}",
+            (new_pwd_hash, new_salt, row["id"])
+        )
 
     cursor.execute(f"UPDATE users SET last_login = CURRENT_TIMESTAMP WHERE id = {param}", (row["id"],))
     token = secrets.token_urlsafe(32)

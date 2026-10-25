@@ -4,6 +4,7 @@ import sys
 import time
 import json
 import asyncio
+import threading
 import joblib
 import numpy as np
 import pandas as pd
@@ -984,8 +985,37 @@ def evaluate_single_transaction(tx_dict: Dict[str, Any], sync_enrich: bool = Fal
 # UNIVERSAL DATASET INGESTION ENDPOINTS
 # ==========================================
 
+# Thread-safe multi-tenant dataset cache with bounded capacity
+_ANALYSIS_LOCK = threading.Lock()
+_ANALYSIS_CACHE: Dict[str, pd.DataFrame] = {}
+_ANALYSIS_CACHE_ORDER: List[str] = []
+MAX_ANALYSIS_CACHE_SIZE = 50
+
+def _cache_analyzed_dataframe(key: str, df: pd.DataFrame):
+    with _ANALYSIS_LOCK:
+        _ANALYSIS_CACHE[key] = df
+        if key not in _ANALYSIS_CACHE_ORDER:
+            _ANALYSIS_CACHE_ORDER.append(key)
+        while len(_ANALYSIS_CACHE_ORDER) > MAX_ANALYSIS_CACHE_SIZE:
+            evicted = _ANALYSIS_CACHE_ORDER.pop(0)
+            _ANALYSIS_CACHE.pop(evicted, None)
+
+def _get_analyzed_dataframe(key: Optional[str] = None) -> Optional[pd.DataFrame]:
+    with _ANALYSIS_LOCK:
+        if key and key in _ANALYSIS_CACHE:
+            return _ANALYSIS_CACHE[key]
+        if _ANALYSIS_CACHE_ORDER:
+            return _ANALYSIS_CACHE.get(_ANALYSIS_CACHE_ORDER[-1])
+        return None
+
+last_analyzed_dataframe = None
+
+
 @app.post("/api/v1/upload-dataset")
-async def upload_and_analyze_dataset(file: UploadFile = File(...)):
+async def upload_and_analyze_dataset(
+    file: UploadFile = File(...),
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Accept CSV, TSV, Excel, or JSON file, auto-detect schema, and run adaptive anomaly & fraud analysis."""
     global last_analyzed_dataframe
     try:
@@ -1001,7 +1031,24 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
                 detail=f"Unsupported file type '{ext}'. Supported formats: CSV, TSV, JSON, Excel (.xlsx, .xls)."
             )
 
-        content = await file.read()
+        # Enforce maximum upload limit (50 MB) and stream chunks to prevent OOM DoS (CWE-400)
+        MAX_UPLOAD_SIZE = 50 * 1024 * 1024
+        CHUNK_SIZE = 1024 * 1024
+        content_chunks = []
+        total_bytes = 0
+        while True:
+            chunk = await file.read(CHUNK_SIZE)
+            if not chunk:
+                break
+            total_bytes += len(chunk)
+            if total_bytes > MAX_UPLOAD_SIZE:
+                raise HTTPException(
+                    status_code=413,
+                    detail=f"Uploaded file exceeds maximum permissible limit of {MAX_UPLOAD_SIZE // (1024 * 1024)}MB."
+                )
+            content_chunks.append(chunk)
+        content = b"".join(content_chunks)
+
         if ext == ".json":
             df = pd.read_json(io.BytesIO(content))
         elif ext in (".xlsx", ".xls"):
@@ -1016,8 +1063,10 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
 
         analysis = universal_detector.analyze_dataset(df)
         analysis["metadata"]["filename"] = safe_filename
+        analysis_id = str(uuid.uuid4())
+        analysis["metadata"]["analysis_id"] = analysis_id
 
-        # Enrich and store for export
+        # Enrich and store for tenant/session export
         scored_df = df.copy()
         scored_records = analysis["scored_records"]
         if len(scored_records) == len(scored_df):
@@ -1025,7 +1074,12 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
             scored_df["aegis_decision"] = [r["decision"] for r in scored_records]
             scored_df["aegis_risk_level"] = [r["risk_level"] for r in scored_records]
             scored_df["aegis_reasons"] = ["; ".join(r["reasons"]) for r in scored_records]
+
         last_analyzed_dataframe = scored_df
+        _cache_analyzed_dataframe(analysis_id, scored_df)
+        if current_user:
+            user_key = f"usr_{current_user.get('id', 'anon')}"
+            _cache_analyzed_dataframe(user_key, scored_df)
 
         return analysis
     except HTTPException:
@@ -1035,7 +1089,10 @@ async def upload_and_analyze_dataset(file: UploadFile = File(...)):
 
 
 @app.get("/api/v1/sample-dataset/{dataset_type}")
-def get_sample_dataset_analysis(dataset_type: str):
+def get_sample_dataset_analysis(
+    dataset_type: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Load pre-packaged financial datasets for one-click testing."""
     global last_analyzed_dataframe
     file_map = {
@@ -1063,6 +1120,8 @@ def get_sample_dataset_analysis(dataset_type: str):
 
     analysis = universal_detector.analyze_dataset(df)
     analysis["metadata"]["filename"] = filename
+    analysis_id = str(uuid.uuid4())
+    analysis["metadata"]["analysis_id"] = analysis_id
 
     # Cache for CSV export
     scored_df = df.copy()
@@ -1072,20 +1131,36 @@ def get_sample_dataset_analysis(dataset_type: str):
         scored_df["aegis_decision"] = [r["decision"] for r in scored_records]
         scored_df["aegis_risk_level"] = [r["risk_level"] for r in scored_records]
         scored_df["aegis_reasons"] = ["; ".join(r["reasons"]) for r in scored_records]
+
     last_analyzed_dataframe = scored_df
+    _cache_analyzed_dataframe(analysis_id, scored_df)
+    if current_user:
+        user_key = f"usr_{current_user.get('id', 'anon')}"
+        _cache_analyzed_dataframe(user_key, scored_df)
 
     return analysis
 
 
 @app.get("/api/v1/export-analyzed-csv")
-def export_analyzed_csv():
-    """Export the most recently analyzed dataset with calculated risk scores and reason codes."""
+def export_analyzed_csv(
+    analysis_id: Optional[str] = None,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
+    """Export the analyzed dataset with calculated risk scores and reason codes."""
     global last_analyzed_dataframe
-    if last_analyzed_dataframe is None or last_analyzed_dataframe.empty:
-        raise HTTPException(status_code=404, detail="No analyzed dataset available for export.")
+    lookup_key = analysis_id
+    if not lookup_key and current_user:
+        lookup_key = f"usr_{current_user.get('id')}"
+
+    df = _get_analyzed_dataframe(lookup_key)
+    if df is None or df.empty:
+        if last_analyzed_dataframe is not None and not last_analyzed_dataframe.empty:
+            df = last_analyzed_dataframe
+        else:
+            raise HTTPException(status_code=404, detail="No analyzed dataset available for export.")
 
     stream = io.StringIO()
-    last_analyzed_dataframe.to_csv(stream, index=False)
+    df.to_csv(stream, index=False)
     response = Response(content=stream.getvalue(), media_type="text/csv")
     response.headers["Content-Disposition"] = f"attachment; filename=aegisflow_risk_analysis_{int(time.time())}.csv"
     return response
@@ -1152,8 +1227,13 @@ def api_get_rules():
 
 
 @app.post("/api/v1/rules/toggle")
-def api_toggle_rule(payload: RuleTogglePayload):
+def api_toggle_rule(
+    payload: RuleTogglePayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Enables or disables a specific risk rule dynamically."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Toggling operational risk rules requires admin or fraud_manager role.")
     updated = rule_engine.toggle_rule(payload.rule_id, payload.enabled)
     if not updated:
         raise HTTPException(status_code=404, detail="Rule not found")
@@ -1161,8 +1241,13 @@ def api_toggle_rule(payload: RuleTogglePayload):
 
 
 @app.post("/api/v1/rules/custom")
-def api_add_custom_rule(payload: CustomRulePayload):
+def api_add_custom_rule(
+    payload: CustomRulePayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Creates a new hot-reloadable custom risk rule."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Registering custom risk rules requires admin or fraud_manager role.")
     new_rule = rule_engine.add_custom_rule(
         name=payload.name,
         description=payload.description,
@@ -1176,8 +1261,13 @@ def api_add_custom_rule(payload: CustomRulePayload):
 
 
 @app.delete("/api/v1/rules/{rule_id}")
-def api_delete_custom_rule(rule_id: str):
+def api_delete_custom_rule(
+    rule_id: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Deletes a custom risk rule."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Deleting custom risk rules requires admin or fraud_manager role.")
     success = rule_engine.delete_rule(rule_id)
     if not success:
         raise HTTPException(status_code=400, detail="Cannot delete system rule or rule not found")
@@ -1367,8 +1457,13 @@ def api_get_soc_telemetry():
 
 
 @app.post("/api/v1/cyber/quarantine-ip")
-def api_quarantine_ip(req: QuarantineIPRequest):
+def api_quarantine_ip(
+    req: QuarantineIPRequest,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Quarantines an attacker IP address with edge rule enforcement."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "analyst", "lead_risk_architect", "fraud_ops_lead", "risk_analyst")):
+        raise HTTPException(status_code=403, detail="Host IP quarantine requires authenticated security analyst, fraud manager, or admin role.")
     host = cyber_soc_engine.quarantine_ip(
         ip=req.ip,
         reason=req.reason or "Manual Security Analyst Block",
@@ -1380,8 +1475,13 @@ def api_quarantine_ip(req: QuarantineIPRequest):
 
 
 @app.delete("/api/v1/cyber/quarantine-ip/{ip}")
-def api_release_quarantine_ip(ip: str):
+def api_release_quarantine_ip(
+    ip: str,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Releases an IP address from edge quarantine."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "analyst", "lead_risk_architect", "fraud_ops_lead", "risk_analyst")):
+        raise HTTPException(status_code=403, detail="Releasing IP quarantine requires authenticated security analyst, fraud manager, or admin role.")
     released = cyber_soc_engine.release_ip(ip)
     return {"status": "released" if released else "not_found", "ip": ip}
 
@@ -2349,14 +2449,18 @@ def api_canary_status():
 
 
 @app.post("/api/v1/canary/promote")
-def api_canary_promote():
+def api_canary_promote(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     """Hot-promotes candidate Challenger to primary Champion with Merkle non-repudiation."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model promotion requires admin or fraud_manager role.")
     return canary_pipeline.promote_challenger()
 
 
 @app.post("/api/v1/canary/rollback")
-def api_canary_rollback():
+def api_canary_rollback(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     """Rolls back to the previous Champion model."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model rollback requires admin or fraud_manager role.")
     return canary_pipeline.rollback()
 
 
@@ -2502,8 +2606,13 @@ class StreamerBurstPayload(BaseModel):
 
 
 @app.post("/api/v1/streamer/start")
-def api_streamer_start(payload: StreamerStartPayload):
+def api_streamer_start(
+    payload: StreamerStartPayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Starts continuous multi-threaded background transaction streaming across domains."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Controlling streaming generators requires admin or fraud_manager role.")
     return continuous_streamer.start(
         tps=payload.tps or 2.0,
         fraud_ratio=payload.fraud_ratio or 0.08,
@@ -2512,8 +2621,10 @@ def api_streamer_start(payload: StreamerStartPayload):
 
 
 @app.post("/api/v1/streamer/stop")
-def api_streamer_stop():
+def api_streamer_stop(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     """Stops continuous transaction streaming daemon."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Controlling streaming generators requires admin or fraud_manager role.")
     return continuous_streamer.stop()
 
 
@@ -2657,12 +2768,15 @@ def api_login(payload: LoginPayload, request: Request):
 @app.post("/api/v1/auth/register")
 def api_register(payload: RegisterPayload):
     try:
+        # Enforce least privilege: public self-registration is strictly restricted to analyst role (CWE-269 / CWE-915)
+        # Any escalation to admin or fraud_manager must be performed by an existing admin.
+        safe_role = "analyst"
         user = register_user(
             username=payload.username,
             email=payload.email,
             full_name=payload.full_name,
             password=payload.password,
-            role=payload.role or "analyst"
+            role=safe_role
         )
         access_token = create_access_token(
             user_id=user["id"],
@@ -2967,6 +3081,8 @@ def api_test_notification(
     current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
     """Dispatches a synthetic test notification to verify channel delivery (Phase 7)."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Dispatching synthetic test notifications requires admin or fraud_manager role.")
     res = alert_notifier.dispatch(
         alert_title=payload.alert_title,
         severity=payload.severity,
@@ -3043,8 +3159,13 @@ def api_create_backup(payload: BackupCreatePayload, current_user: Dict[str, Any]
     return backup_manager.create_backup(description=payload.description)
 
 @app.post("/api/v1/admin/backup/verify")
-def api_verify_backup(payload: BackupRestorePayload):
+def api_verify_backup(
+    payload: BackupRestorePayload,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Verifies SHA-256 integrity of a backup archive against corruption or tampering (Phase 6)."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect")):
+        raise HTTPException(status_code=403, detail="Backup verification requires admin or fraud_manager role.")
     return backup_manager.verify_backup(payload.backup_id)
 
 @app.post("/api/v1/admin/backup/restore")
@@ -3087,6 +3208,13 @@ def api_retention_apply(
 ):
     """Executes data retention policy simulation or live compliance purge (Phase 7)."""
     is_dry = payload.dry_run if payload is not None else dry_run
+    # Strictly prevent unauthenticated data destruction: live purge requires authenticated admin privileges
+    if not is_dry:
+        if not current_user or current_user.get("role") not in ("admin", "lead_risk_architect"):
+            raise HTTPException(
+                status_code=403,
+                detail="Live data retention purge requires authenticated admin privileges."
+            )
     operator = (current_user or {}).get("username", "admin")
     return retention_engine.apply_retention_policy(dry_run=is_dry, operator=operator)
 

@@ -18,6 +18,8 @@ from typing import Dict, Any, List, Optional
 import urllib.request
 import urllib.error
 
+from src.core.security import validate_webhook_url
+
 logger = logging.getLogger("FinCipher.SiemForwarder")
 
 
@@ -72,15 +74,24 @@ class SiemForwarder:
         """Updates SIEM endpoint parameters dynamically."""
         with self._lock:
             if splunk_hec_url is not None:
-                self.splunk_hec_url = splunk_hec_url.strip() if splunk_hec_url else None
+                clean_splunk = splunk_hec_url.strip() if splunk_hec_url else None
+                if clean_splunk:
+                    validate_webhook_url(clean_splunk)
+                self.splunk_hec_url = clean_splunk
             if splunk_hec_token is not None:
                 self.splunk_hec_token = splunk_hec_token.strip() if splunk_hec_token else None
             if elastic_url is not None:
-                self.elastic_url = elastic_url.strip() if elastic_url else None
+                clean_elastic = elastic_url.strip() if elastic_url else None
+                if clean_elastic:
+                    validate_webhook_url(clean_elastic)
+                self.elastic_url = clean_elastic
             if elastic_api_key is not None:
                 self.elastic_api_key = elastic_api_key.strip() if elastic_api_key else None
             if webhook_url is not None:
-                self.webhook_url = webhook_url.strip() if webhook_url else None
+                clean_webhook = webhook_url.strip() if webhook_url else None
+                if clean_webhook:
+                    validate_webhook_url(clean_webhook)
+                self.webhook_url = clean_webhook
 
     def format_event(self, event: Dict[str, Any], fmt: str = SiemFormat.SPLUNK_HEC) -> Any:
         """Serializes event into selected SIEM / SOC standard format."""
@@ -201,9 +212,10 @@ class SiemForwarder:
         # Deliver to Splunk HEC if configured
         if self.splunk_hec_url and self.splunk_hec_token:
             try:
+                validated_splunk = validate_webhook_url(self.splunk_hec_url)
                 body = json.dumps(payload).encode("utf-8")
                 req = urllib.request.Request(
-                    self.splunk_hec_url,
+                    validated_splunk,
                     data=body,
                     headers={
                         "Authorization": f"Splunk {self.splunk_hec_token}",
@@ -219,8 +231,9 @@ class SiemForwarder:
         # Deliver to Webhook if configured
         if self.webhook_url:
             try:
+                validated_webhook = validate_webhook_url(self.webhook_url)
                 body = json.dumps(payload if isinstance(payload, dict) else {"message": payload}).encode("utf-8")
-                req = urllib.request.Request(self.webhook_url, data=body, headers={"Content-Type": "application/json"})
+                req = urllib.request.Request(validated_webhook, data=body, headers={"Content-Type": "application/json"})
                 with urllib.request.urlopen(req, timeout=2.0) as resp:
                     if resp.status in (200, 201, 202, 204):
                         delivered_channels.append("WEBHOOK")

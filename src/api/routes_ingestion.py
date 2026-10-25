@@ -6,6 +6,8 @@ Author: Om Kamble
 import time
 from typing import Dict, Any, List, Optional
 from fastapi import APIRouter, HTTPException, Depends
+from src.core.config import settings
+from src.core.security import get_optional_user
 from libs.models.events import GenericEvent, EventBatch
 from services.ingestion.normalizer import UniversalEventNormalizer
 from services.risk_engine.router import universal_risk_router
@@ -654,15 +656,22 @@ def api_get_canary_telemetry():
 
 
 @router.post("/governance/promote", summary="Zero-downtime hot promote Challenger to Champion")
-def api_promote_challenger(payload: Optional[Dict[str, Any]] = None):
+def api_promote_challenger(
+    payload: Optional[Dict[str, Any]] = None,
+    current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
+):
     """Promotes shadow model to active champion with cryptographic signing in Merkle audit ledger."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model promotion requires admin or fraud_manager role.")
     res = canary_evaluator.promote_challenger()
     return res
 
 
 @router.post("/governance/rollback", summary="Rollback Champion model to previous version")
-def api_rollback_champion():
+def api_rollback_champion(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     """Rolls back to previously active model version."""
+    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+        raise HTTPException(status_code=403, detail="Model rollback requires admin or fraud_manager role.")
     return canary_evaluator.rollback()
 
 

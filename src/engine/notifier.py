@@ -18,6 +18,8 @@ from typing import Dict, Any, List, Optional
 import urllib.request
 import urllib.error
 
+from src.core.security import validate_webhook_url
+
 logger = logging.getLogger("fincipher.notifier")
 
 
@@ -49,9 +51,15 @@ class AlertNotifier:
         """Updates dispatcher configuration dynamically."""
         self.enabled = enabled
         if webhook_url is not None:
-            self.webhook_url = webhook_url.strip() if webhook_url else None
+            clean_url = webhook_url.strip() if webhook_url else None
+            if clean_url:
+                validate_webhook_url(clean_url)
+            self.webhook_url = clean_url
         if slack_webhook_url is not None:
-            self.slack_webhook_url = slack_webhook_url.strip() if slack_webhook_url else None
+            clean_slack = slack_webhook_url.strip() if slack_webhook_url else None
+            if clean_slack:
+                validate_webhook_url(clean_slack)
+            self.slack_webhook_url = clean_slack
         self.min_severity = min_severity.upper()
 
     def get_status(self) -> Dict[str, Any]:
@@ -168,9 +176,10 @@ class AlertNotifier:
 
     def _send_http_json(self, url: str, payload: Dict[str, Any]) -> bool:
         try:
+            validated_url = validate_webhook_url(url)
             data = json.dumps(payload).encode("utf-8")
             req = urllib.request.Request(
-                url,
+                validated_url,
                 data=data,
                 headers={
                     "Content-Type": "application/json",
