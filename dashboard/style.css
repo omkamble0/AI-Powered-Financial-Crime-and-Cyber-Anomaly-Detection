@@ -3464,3 +3464,180 @@ input[type="range"] {
   border-color: #e2e8f0;
 }
 
+/* ============================================================== */
+/* PERFECTED 24/7 LIVE OPERATIONS ARCHITECTURE & ALIGNMENT */
+/* ============================================================== */
+
+/* 1. DOMAIN FEATURE GRIDS (NO STRANDED 5TH CARD) */
+.domain-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+@media (min-width: 1280px) {
+  #domainFeaturesBanking {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+  }
+  #domainFeaturesCyber, #domainFeaturesEcom {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+/* 2. MATCHING HEIGHTS FOR STREAM & DECISION RECEIPT */
+#opsEventStreamList {
+  min-height: 380px;
+  max-height: 420px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-right: 4px;
+}
+
+/* 3. PRECISION DATA TABLE BORDERS & ACTIVE ROW HIGHLIGHTS */
+.data-table th, 
+.dashboard-panel table th {
+  background: #f8fafc;
+  color: #475569;
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 9px 12px;
+  border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.data-table td, 
+.dashboard-panel table td {
+  padding: 9px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  font-size: 11px;
+  vertical-align: middle;
+}
+
+.data-table tbody tr:hover, 
+.dashboard-panel table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* 4. HIGH-FIDELITY ACTION BADGES */
+.badge-action-block {
+  background: #fee2e2;
+  color: #b91c1c;
+  border: 1px solid #f87171;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-action-challenge {
+  background: #fef3c7;
+  color: #92400e;
+  border: 1px solid #f59e0b;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.badge-action-quarantine {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #ef4444;
+  font-size: 9.5px;
+  font-weight: 800;
+  padding: 2px 7px;
+  border-radius: 4px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 5. SIDEBAR DOCK REFINEMENT */
+.sidebar-dock {
+  background: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+}
+
+.dock-btn {
+  border: 1px solid transparent;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dock-btn:hover {
+  background: #f1f5f9;
+  color: #4f46e5;
+  border-color: #e2e8f0;
+  transform: translateX(2px);
+}
+
+.dock-btn.active {
+  background: #4f46e5 !important;
+  color: #ffffff !important;
+  border-color: #4338ca;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+}
+
+/* ============================================================== */
+/* COMMAND DECK RESPONSIVENESS & POLISHED FINISH                   */
+/* ============================================================== */
+.calibration-controls-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+  gap: 18px;
+  align-items: end;
+}
+
+@media (max-width: 1280px) {
+  #domainFeaturesBanking {
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)) !important;
+  }
+  .calibration-controls-grid {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)) !important;
+  }
+}
+
+@media (max-width: 768px) {
+  #domainFeaturesBanking,
+  #domainFeaturesCyber,
+  #domainFeaturesEcom {
+    grid-template-columns: 1fr !important;
+  }
+  .calibration-controls-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+.domain-feature-card {
+  border-radius: 12px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.domain-feature-card:hover {
+  border-color: #4f46e5;
+  box-shadow: 0 6px 20px -2px rgba(79, 70, 229, 0.12);
+  transform: translateY(-2px);
+}
+
+.feature-stat-row {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 10px;
+}
+
+
+

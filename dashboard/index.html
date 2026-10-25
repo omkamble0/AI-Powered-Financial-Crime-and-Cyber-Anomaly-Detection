@@ -106,7 +106,7 @@
             <span class="nav-icon">⚖️</span>
             <span>Cases & Alerts</span>
           </button>
-          <button type="button" class="nav-pill" data-tab="tab-live-ops" id="navTabLiveOps" title="⚡ 24/7 Production Live Operations & Command Deck" style="background: rgba(99, 102, 241, 0.12); color: #4f46e5; font-weight: 700;">
+          <button type="button" class="nav-pill" data-tab="tab-live-ops" id="navTabLiveOps" title="⚡ 24/7 Production Live Operations & Command Deck">
             <span class="nav-icon">⚡</span>
             <span>Live Ops Cockpit</span>
           </button>
@@ -2811,7 +2811,7 @@
           </div>
 
           <!-- DOMAIN 1: BANKING FEATURES GRID (5 FEATURES) -->
-          <div id="domainFeaturesBanking" class="domain-feature-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <div id="domainFeaturesBanking" class="domain-feature-grid" style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 14px;">
             
             <!-- FEATURE 1: TRANSACTION MONITORING -->
             <div class="domain-feature-card">
@@ -2921,7 +2921,7 @@
           </div>
 
           <!-- DOMAIN 2: CYBERSECURITY & IT SECOPS FEATURES GRID (6 FEATURES, HIDDEN INITIALLY) -->
-          <div id="domainFeaturesCyber" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <div id="domainFeaturesCyber" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px;">
             
             <!-- FEATURE 1: LOGIN & ACCESS ANOMALIES -->
             <div class="domain-feature-card">
@@ -3052,7 +3052,7 @@
           </div>
 
           <!-- DOMAIN 3: E-COMMERCE & RETAIL FEATURES GRID (6 FEATURES, HIDDEN INITIALLY) -->
-          <div id="domainFeaturesEcom" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px;">
+          <div id="domainFeaturesEcom" class="domain-feature-grid hidden" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 14px;">
             
             <!-- FEATURE 1: FAKE ORDERS & BOT CHECKOUTS -->
             <div class="domain-feature-card">
@@ -3274,54 +3274,55 @@
                 </div>
               </div>
 
+            </div> <!-- End Decision Receipt Card (line 3219) -->
+          </div> <!-- End Right Column: Real-Time Decision Receipt (line 3216) -->
+        </div> <!-- End Main 2-Column Monitoring & Simulation Workspace Grid (line 3188) -->
+
+        <!-- DYNAMIC RULE PACK CALIBRATION DOCK (FULL WIDTH HORIZONTAL CONTROL DECK) -->
+        <div class="dashboard-panel" style="padding: 18px 22px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px; margin-top: 18px; margin-bottom: 22px; box-shadow: 0 4px 15px rgba(0,0,0,0.02);">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 14px; flex-wrap: wrap; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+              <span style="font-size: 18px;">🎛️</span>
+              <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;" id="calibPanelTitle">Dynamic Banking Rule Pack Calibration</h3>
+              <span class="status-chip chip-approved" id="opsPackVersionBadge" style="font-size: 10px; font-weight: 800;">v1.2.0 Active</span>
+            </div>
+            <p style="font-size: 11px; color: #475569; margin: 0; font-weight: 600;">
+              Tune risk weights and policy thresholds dynamically without server reboot or downtime.
+            </p>
+          </div>
+
+          <div class="calibration-controls-grid" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) auto; gap: 18px; align-items: end;">
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #1e293b; font-weight: 700;">
+                <span id="lblCalSlider1Title">AML CTR Structuring Ceiling ($):</span>
+                <strong id="lblCalamlLimit" style="color: #4f46e5; font-family: var(--font-mono);">$10,000</strong>
+              </div>
+              <input type="range" id="sliderAmlLimit" min="5000" max="25000" step="500" value="10000" style="width: 100%; accent-color: #4f46e5; cursor: pointer;">
             </div>
 
-            <!-- DYNAMIC RULE PACK CALIBRATION DOCK -->
-            <div class="dashboard-panel" style="padding: 18px; background: #ffffff; border: 1px solid #cbd5e1; border-radius: 14px;">
-              <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 8px; margin-bottom: 12px;">
-                <div style="display: flex; align-items: center; gap: 8px;">
-                  <span style="font-size: 16px;">🎛️</span>
-                  <h3 style="font-size: 14px; font-weight: 800; color: #0f172a; margin: 0;" id="calibPanelTitle">Dynamic Banking Rule Pack Calibration</h3>
-                </div>
-                <span class="status-chip chip-approved" id="opsPackVersionBadge" style="font-size: 10px; font-weight: 800;">v1.2.0 Active</span>
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #1e293b; font-weight: 700;">
+                <span id="lblCalSlider2Title">Wire Velocity Hourly Limit:</span>
+                <strong id="lblCalBfLimit" style="color: #059669; font-family: var(--font-mono);">5 Wires/hr</strong>
               </div>
-              <p style="font-size: 11px; color: #475569; margin-bottom: 12px; font-weight: 600;">
-                Tune risk weights and policy thresholds dynamically without server reboot or downtime.
-              </p>
-
-              <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px;">
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
-                    <span id="lblCalSlider1Title">AML CTR Structuring Ceiling ($):</span>
-                    <strong id="lblCalamlLimit">$10,000</strong>
-                  </div>
-                  <input type="range" id="sliderAmlLimit" min="7000" max="15000" step="500" value="10000" style="width: 100%;">
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
-                    <span id="lblCalSlider2Title">Brute Force Fails Threshold:</span>
-                    <strong id="lblCalBfLimit">5 Fails</strong>
-                  </div>
-                  <input type="range" id="sliderBfLimit" min="2" max="10" step="1" value="5" style="width: 100%;">
-                </div>
-
-                <div>
-                  <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; color: #1e293b; font-weight: 700;">
-                    <span>Hard Block Decision Threshold:</span>
-                    <strong id="lblCalBlockThreshold">0.85</strong>
-                  </div>
-                  <input type="range" id="sliderBlockThreshold" min="0.60" max="0.95" step="0.05" value="0.85" style="width: 100%;">
-                </div>
-              <div style="margin-top: 12px;">
-                <button type="button" class="btn btn-emerald btn-sm" id="btnOpsSaveCalibration" style="width: 100%; font-size: 11px; padding: 7px 12px; font-weight: 700; border-radius: 6px;">
-                  ⚡ Apply Live Calibration
-                </button>
-              </div>
+              <input type="range" id="sliderBfLimit" min="1" max="20" step="1" value="5" style="width: 100%; accent-color: #059669; cursor: pointer;">
             </div>
 
-          </div> <!-- End Right Column: Real-Time Decision Receipt & Calibration -->
-        </div> <!-- End 2-Column Monitoring & Simulation Workspace Grid -->
+            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 10px; padding: 12px 14px;">
+              <div style="display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 6px; color: #1e293b; font-weight: 700;">
+                <span>Hard Block Decision Threshold:</span>
+                <strong id="lblCalBlockThreshold" style="color: #e11d48; font-family: var(--font-mono);">0.85</strong>
+              </div>
+              <input type="range" id="sliderBlockThreshold" min="0.60" max="0.95" step="0.05" value="0.85" style="width: 100%; accent-color: #e11d48; cursor: pointer;">
+            </div>
+
+            <div>
+              <button type="button" class="btn btn-emerald" id="btnOpsSaveCalibration" style="font-size: 12px; padding: 12px 18px; font-weight: 700; border-radius: 8px; white-space: nowrap; height: 46px;">
+                ⚡ Apply Live Calibration
+              </button>
+            </div>
+          </div>
+        </div>
 
         <!-- ============================================================== -->
         <!-- PHASE 7: ENTERPRISE ML GOVERNANCE, SHADOW RETRAINING & CANARY FLIGHT DECK (FULL WIDTH) -->
@@ -4197,6 +4198,6 @@
     </div>
   </div>
 
-  <script src="/static/app.js?v=2.6.0"></script>
+  <script src="/static/app.js?v=2.7.0"></script>
 </body>
 </html>

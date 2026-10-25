@@ -76,6 +76,10 @@ function initTabs() {
     const targetPane = document.getElementById(targetId);
     if (targetPane) {
       targetPane.classList.add("active");
+      if (targetId === "tab-live-ops") {
+        if (typeof refreshLiveOpsTelemetry === "function") refreshLiveOpsTelemetry();
+        if (typeof refreshWorkerPoolCockpit === "function") refreshWorkerPoolCockpit();
+      }
       if (targetId === "tab-topology") {
         setTimeout(() => {
           const cvs = document.getElementById("networkGraphCanvas");
@@ -6741,6 +6745,111 @@ function initLiveOpsCockpit() {
     });
   }
 
+  // Pre-seed Live Event Stream & Decision Receipt on initialization
+  function initLiveOpsSampleStream() {
+    const streamContainer = document.getElementById("opsEventStreamList");
+    if (!streamContainer) return;
+
+    const sampleEvents = [
+      {
+        domainChip: "🏦 BANKING",
+        entityId: "usr_ofac_corridor_881",
+        timeStr: new Date(Date.now() - 14000).toLocaleTimeString(),
+        scenario: "AML / Sanctions: $75,000 Sanctioned Corridor Wire (OFAC)",
+        ruleTag: '<span class="tag-detection tag-detection-high" style="font-size: 9.5px;">⚡ OFAC SDN Match</span> <span class="tag-detection tag-detection-high" style="font-size: 9.5px;">⚡ Amount Outlier</span>',
+        decision: "BLOCK",
+        chipClass: "chip-block",
+        leftAccent: "3.5px solid #e11d48",
+        riskScore: "0.985",
+        latencyMs: "0.22"
+      },
+      {
+        domainChip: "🛡️ CYBER",
+        entityId: "usr_agent_tokyo_lon",
+        timeStr: new Date(Date.now() - 32000).toLocaleTimeString(),
+        scenario: "Login Anomaly: London Impossible Travel (9,500km in 15m)",
+        ruleTag: '<span class="tag-detection tag-detection-high" style="font-size: 9.5px;">⚡ Impossible Geo-Velocity</span> <span class="tag-detection tag-detection-med" style="font-size: 9.5px;">⚡ Tor Relay</span>',
+        decision: "BLOCK",
+        chipClass: "chip-block",
+        leftAccent: "3.5px solid #e11d48",
+        riskScore: "0.940",
+        latencyMs: "0.31"
+      },
+      {
+        domainChip: "🛒 E-COMM",
+        entityId: "farm_buyer_promo_3",
+        timeStr: new Date(Date.now() - 54000).toLocaleTimeString(),
+        scenario: "Promo Abuse: Multi-Account Syndicate Redemption",
+        ruleTag: '<span class="tag-detection tag-detection-med" style="font-size: 9.5px;">⚡ Shared Subnet IP</span> <span class="tag-detection tag-detection-med" style="font-size: 9.5px;">⚡ Recycled Voucher</span>',
+        decision: "CHALLENGE",
+        chipClass: "chip-review",
+        leftAccent: "3.5px solid #d97706",
+        riskScore: "0.720",
+        latencyMs: "0.19"
+      },
+      {
+        domainChip: "🏦 BANKING",
+        entityId: "acct_corporate_wire_12",
+        timeStr: new Date(Date.now() - 85000).toLocaleTimeString(),
+        scenario: "Transaction Monitoring: Routine B2B Payroll Wire",
+        ruleTag: '<span class="tag-detection tag-detection-benign" style="font-size: 9.5px;">🛡️ Profile Concordant</span>',
+        decision: "ALLOW",
+        chipClass: "chip-approved",
+        leftAccent: "3.5px solid #059669",
+        riskScore: "0.018",
+        latencyMs: "0.14"
+      }
+    ];
+
+    streamContainer.innerHTML = sampleEvents.map(e => `
+      <div style="background: #ffffff; border: 1px solid #e2e8f0; border-left: ${e.leftAccent}; border-radius: 10px; padding: 11px 14px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.02); transition: all 0.2s ease;">
+        <div>
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
+            <span class="status-chip chip-neutral" style="font-size: 9px; padding: 1px 6px;">${e.domainChip}</span>
+            <span style="font-size: 11px; font-weight: 800; color: #0f172a; font-family: var(--font-mono);">${e.entityId}</span>
+            <span style="font-size: 10px; color: #64748b; font-weight: 500;">${e.timeStr}</span>
+          </div>
+          <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #334155; font-weight: 600;">
+            <span>${e.scenario}</span>
+            ${e.ruleTag}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span class="status-chip ${e.chipClass}">${e.decision}</span>
+          <div style="font-size: 10px; font-family: var(--font-mono); color: #475569; margin-top: 3px; font-weight: 700;">Risk: ${e.riskScore} • ${e.latencyMs}ms</div>
+        </div>
+      </div>
+    `).join("");
+
+    // Initialize Receipt with active block details
+    const elDecision = document.getElementById("opsReceiptDecision");
+    const elScore = document.getElementById("opsReceiptRiskScore");
+    const elLat = document.getElementById("opsReceiptLatency");
+    const elBadge = document.getElementById("opsReceiptDecisionBadge");
+    const elNarrative = document.getElementById("opsReceiptNarrative");
+
+    if (elDecision) { elDecision.textContent = "BLOCK"; elDecision.style.color = "#e11d48"; }
+    if (elScore) { elScore.textContent = "0.985"; elScore.style.color = "#e11d48"; }
+    if (elLat) { elLat.textContent = "0.22 ms"; }
+    if (elBadge) { elBadge.textContent = "BLOCK"; elBadge.className = "status-chip chip-block"; }
+    if (elNarrative) {
+      elNarrative.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 6px;">
+          <strong style="color: #0f172a; font-size: 12px;">AML / Sanctions: $75,000 Sanctioned Corridor Wire</strong>
+          <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+            <span class="tag-detection tag-detection-high">⚡ OFAC SDN List Match</span>
+            <span class="tag-detection tag-detection-high">⚡ FATF High-Risk Corridor</span>
+          </div>
+        </div>
+        <div style="font-size: 11.5px; color: #475569; line-height: 1.45;">
+          Transaction destination corresponds to Specially Designated National (SDN) entity under 31 CFR § 501. Wire exceeds structural ceiling ($10,000 CTR) by 7.5x. Immediate hard block enforced, supervisory alert queued for FinCEN SAR filing.
+        </div>
+      `;
+    }
+  }
+
+  initLiveOpsSampleStream();
+
   // Initial Telemetry Refresh & Background Poller
   refreshLiveOpsTelemetry();
   refreshWorkerPoolCockpit();
@@ -6874,20 +6983,39 @@ async function refreshWorkerPoolCockpit() {
           `;
         } else {
           tbody.innerHTML = dispatches.map(d => {
-            const isBlock = d.action_type && (d.action_type.includes("BLOCK") || d.action_type.includes("QUARANTINE"));
+            const isBlock = d.action_type && (d.action_type.includes("BLOCK") || d.action_type.includes("QUARANTINE") || d.action_type.includes("FREEZE"));
+            const isChallenge = d.action_type && d.action_type.includes("CHALLENGE");
             const isRevoked = d.status === "REVOKED";
             const cleanEventId = (d.event_id || 'EVT').replace("CASE_CASE-", "CASE-");
+
+            const friendlyLabels = {
+              "CONFIRMED_FRAUD_BLOCK": "Block Account",
+              "BLOCK_ACCOUNT": "Block Account",
+              "QUARANTINE_IP": "Quarantine IP",
+              "FREEZE_SANCTIONS": "Freeze Sanctions",
+              "STEP_UP_CHALLENGE": "Step-Up 2FA",
+              "INVESTIGATE_CASE": "Flag Case",
+              "LOCK_CREDENTIALS": "Lock Credentials"
+            };
+            const label = friendlyLabels[d.action_type] || (d.action_type || 'Action').replace(/_/g, ' ');
+            const badgeClass = isBlock ? 'badge-action-block' : (isChallenge ? 'badge-action-challenge' : 'status-chip chip-neutral');
+
             return `
               <tr>
-                <td style="font-family: var(--font-mono); font-weight: 700; white-space: nowrap;">${cleanEventId}</td>
-                <td><span class="status-chip ${isBlock ? 'chip-block' : 'chip-warning'}" style="font-size: 9px;">${d.action_type || 'ACTION'}</span></td>
-                <td style="font-family: var(--font-mono); font-weight: 600;">${d.target || '--'}</td>
-                <td><span class="status-chip ${isRevoked ? 'chip-review' : 'chip-approved'}" style="font-size: 9px;">${d.status || 'APPLIED'}</span></td>
-                <td style="font-size: 10px; color: #64748b; white-space: nowrap;">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
+                <td style="font-family: var(--font-mono); font-weight: 700; white-space: nowrap; color: #0f172a;">${cleanEventId}</td>
+                <td><span class="${badgeClass}">${label}</span></td>
+                <td style="font-family: var(--font-mono); font-weight: 600; color: #334155;">${d.target || '--'}</td>
+                <td>
+                  <span class="status-chip ${isRevoked ? 'chip-review' : 'chip-approved'}" style="font-size: 9px; display: inline-flex; align-items: center; gap: 4px;">
+                    ${isRevoked ? '<span>⚠️</span>' : '<span class="live-pulse-dot" style="width: 5px; height: 5px;"></span>'}
+                    ${d.status || 'APPLIED'}
+                  </span>
+                </td>
+                <td style="font-size: 10px; color: #64748b; white-space: nowrap; font-family: var(--font-mono);">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
                 <td>
                   ${isRevoked ?
                     '<span style="font-size: 10px; color: #94a3b8; font-weight: 600;">Revoked</span>' :
-                    `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 3px 8px; border-color: #f43f5e; color: #e11d48; font-weight: 600;" onclick="revokeActionDispatch(${d.id}, '${d.target || ''}')">Revoke</button>`
+                    `<button type="button" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 3px 8px; border-color: #fca5a5; color: #e11d48; font-weight: 700; border-radius: 4px;" onclick="revokeActionDispatch(${d.id}, '${d.target || ''}')">Revoke</button>`
                   }
                 </td>
               </tr>
