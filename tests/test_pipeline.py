@@ -689,7 +689,7 @@ class TestAegisFlowPipeline(unittest.TestCase):
         # Reset to known default state
         rule_engine.reset_to_defaults()
         rules = rule_engine.get_rules()
-        self.assertEqual(len(rules), 4)
+        self.assertEqual(len(rules), 7)
 
         # Add custom rule
         custom = rule_engine.add_custom_rule(
@@ -714,7 +714,7 @@ class TestAegisFlowPipeline(unittest.TestCase):
 
         # Reset
         rule_engine.reset_to_defaults()
-        self.assertEqual(len(rule_engine.get_rules()), 4)
+        self.assertEqual(len(rule_engine.get_rules()), 7)
 
     def test_3ds_intelligence_in_prediction(self):
         payload = {

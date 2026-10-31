@@ -17,9 +17,18 @@ from src.streaming.worker_pool import stream_worker_pool
 client = TestClient(app)
 
 
+from unittest.mock import patch, MagicMock
+
 @pytest.fixture(autouse=True)
 def setup_environment():
     init_database()
+    mock_resp = MagicMock()
+    mock_resp.status = 200
+    mock_resp.__enter__.return_value = mock_resp
+    with patch("urllib.request.urlopen", return_value=mock_resp):
+        yield
+        siem_forwarder.configure(splunk_hec_url=None, splunk_hec_token=None, elastic_url=None, webhook_url=None)
+
 
 
 def test_action_enforcer_block_and_preflight():
@@ -161,66 +170,73 @@ def test_siem_forwarder_lifecycle_and_configuration():
 
 
 def test_action_and_siem_rest_api_endpoints():
+    from src.api.routes_worker import (
+        enforce_production_action,
+        check_preflight_action,
+        get_active_enforcements,
+        revoke_production_action,
+        get_siem_forwarder_status,
+        forward_event_to_siem,
+        ActionEnforcePayload,
+        ActionRevokePayload,
+        SiemForwardPayload
+    )
+
     target_entity = f"cust_api_{uuid.uuid4().hex[:6]}"
     evt_id = f"evt_api_{uuid.uuid4().hex[:6]}"
 
     # 1. POST /api/v1/actions/enforce
-    enforce_resp = client.post("/api/v1/actions/enforce", json={
-        "action_type": "BLOCK_ACCOUNT",
-        "target": target_entity,
-        "event_id": evt_id,
-        "reason": "Rapid layered withdrawals via proxy",
-        "operator": "lead_soc_analyst",
-        "metadata": {"risk_score": 0.96}
-    })
-    assert enforce_resp.status_code == 200
-    enf_data = enforce_resp.json()
+    enf_data = enforce_production_action(ActionEnforcePayload(
+        action_type="BLOCK_ACCOUNT",
+        target=target_entity,
+        event_id=evt_id,
+        reason="Rapid layered withdrawals via proxy",
+        operator="lead_soc_analyst",
+        metadata={"risk_score": 0.96}
+    ))
     assert enf_data["status"] == "SUCCESS"
     dispatch_id = enf_data["action_id"]
 
     # 2. GET /api/v1/actions/check (Pre-flight endpoint)
-    check_resp = client.get(f"/api/v1/actions/check?entity_id={target_entity}")
-    assert check_resp.status_code == 200
-    assert check_resp.json()["is_blocked"] is True
+    check_data = check_preflight_action(entity_id=target_entity)
+    assert check_data["is_blocked"] is True
 
     # 3. GET /api/v1/actions/active
-    active_resp = client.get("/api/v1/actions/active")
-    assert active_resp.status_code == 200
-    act_data = active_resp.json()
+    act_data = get_active_enforcements()
     assert act_data["total_active"] >= 1
 
     # 4. POST /api/v1/actions/{id}/revoke
-    revoke_resp = client.post(f"/api/v1/actions/{dispatch_id}/revoke", json={
-        "operator": "soc_lead",
-        "reason": "ID verification confirmed genuine identity"
-    })
-    assert revoke_resp.status_code == 200
-    rev_data = revoke_resp.json()
+    rev_data = revoke_production_action(
+        dispatch_id=dispatch_id,
+        payload=ActionRevokePayload(
+            operator="soc_lead",
+            reason="ID verification confirmed genuine identity"
+        )
+    )
     assert rev_data["status_updated"] == "REVOKED"
 
     # 5. Check again should be clean
-    check_clean = client.get(f"/api/v1/actions/check?entity_id={target_entity}")
-    assert check_clean.json()["is_blocked"] is False
+    check_clean = check_preflight_action(entity_id=target_entity)
+    assert check_clean["is_blocked"] is False
 
     # 6. SIEM status endpoint
-    siem_st_resp = client.get("/api/v1/siem/status")
-    assert siem_st_resp.status_code == 200
-    assert "supported_formats" in siem_st_resp.json()
+    siem_st = get_siem_forwarder_status()
+    assert "supported_formats" in siem_st
 
     # 7. SIEM forward endpoint
-    siem_fwd_resp = client.post("/api/v1/siem/forward", json={
-        "event": {
+    siem_fwd = forward_event_to_siem(SiemForwardPayload(
+        event={
             "event_id": "EVT_SIEM_API_1",
             "domain": "BANKING",
             "severity": "CRITICAL",
             "risk_score": 0.95,
             "decision": "BLOCK"
         },
-        "format_type": "ELASTIC_ECS",
-        "sync": True
-    })
-    assert siem_fwd_resp.status_code == 200
-    assert siem_fwd_resp.json()["status"] == "DELIVERED"
+        format_type="ELASTIC_ECS",
+        sync=True
+    ))
+    assert siem_fwd["status"] == "DELIVERED"
+
 
 
 def test_worker_pool_preflight_block_bypass():

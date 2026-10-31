@@ -120,6 +120,45 @@ class HybridRuleEngine:
                 risk_boost=0.60,
                 enabled=True,
                 is_system_rule=True
+            ),
+            "RULE_ADDRESS_POISONING": RuleDefinition(
+                rule_id="RULE_ADDRESS_POISONING",
+                name="Crypto Address Poisoning & Vanity Spoof",
+                description="Intercepts zero-value lookalike vanity addresses spoofing known beneficiary hashes.",
+                category="CYBER",
+                condition_field="address_poisoning_score",
+                operator=">=",
+                threshold_value=0.70,
+                action=ActionDecision.BLOCK,
+                risk_boost=0.65,
+                enabled=True,
+                is_system_rule=True
+            ),
+            "RULE_COUNTER_TRADING_SLIPPAGE": RuleDefinition(
+                rule_id="RULE_COUNTER_TRADING_SLIPPAGE",
+                name="Illiquid Pair Counter-Trading Siphon",
+                description="Flags massive price divergence on low-depth books indicative of session cookie siphoning.",
+                category="CYBER",
+                condition_field="counter_trading_score",
+                operator=">=",
+                threshold_value=0.65,
+                action=ActionDecision.BLOCK,
+                risk_boost=0.60,
+                enabled=True,
+                is_system_rule=True
+            ),
+            "RULE_SESSION_HIJACK_DRIFT": RuleDefinition(
+                rule_id="RULE_SESSION_HIJACK_DRIFT",
+                name="Session Token Fingerprint Mismatch",
+                description="Catches token replay or hijacked session cookies submitted from diverged hardware environments.",
+                category="DEVICE",
+                condition_field="session_hijack_score",
+                operator=">=",
+                threshold_value=0.50,
+                action=ActionDecision.CHALLENGE_2FA,
+                risk_boost=0.40,
+                enabled=True,
+                is_system_rule=True
             )
         }
 

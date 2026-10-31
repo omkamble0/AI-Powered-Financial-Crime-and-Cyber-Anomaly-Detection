@@ -65,14 +65,15 @@ ROLE_PERMISSIONS: Dict[UserRole, Set[str]] = {
 
 
 def hash_password(password: str, salt: Optional[str] = None) -> tuple[str, str]:
-    """Hashes password with PBKDF2-HMAC-SHA256 (600,000 iterations)."""
+    """Hashes password with PBKDF2-HMAC-SHA256 (600,000 iterations in prod, 1,000 in test)."""
     if not salt:
         salt = secrets.token_hex(16)
+    iterations = 1_000 if settings.is_testing else 600_000
     key = hashlib.pbkdf2_hmac(
         "sha256",
         password.encode("utf-8"),
         salt.encode("utf-8"),
-        iterations=600_000
+        iterations=iterations
     )
     return key.hex(), salt
 
@@ -82,11 +83,16 @@ def verify_password_with_status(password: str, stored_hash: str, salt: str) -> t
     Verifies a plain password and reports if stored hash is legacy and needs rehash.
     Returns: (is_valid, needs_rehash)
     """
-    # 1. Check modern PBKDF2-HMAC-SHA256 (600,000 iterations)
+    # 1. Check modern PBKDF2-HMAC-SHA256
     new_hash, _ = hash_password(password, salt)
     if secrets.compare_digest(new_hash, stored_hash):
         return True, False
-    # 2. Check legacy SHA-256 hash
+    # Check 600k iterations explicitly if test mode used 1k
+    if settings.is_testing:
+        key_600k = hashlib.pbkdf2_hmac("sha256", password.encode("utf-8"), salt.encode("utf-8"), iterations=600_000).hex()
+        if secrets.compare_digest(key_600k, stored_hash):
+            return True, False
+    # 2. Check legacy single-round SHA-256 hash
     legacy_hash = hashlib.sha256((password + salt).encode("utf-8")).hexdigest()
     if secrets.compare_digest(legacy_hash, stored_hash):
         return True, True
@@ -156,13 +162,69 @@ def validate_webhook_url(url: str, allow_private: Optional[bool] = None) -> str:
     return clean_url
 
 
+
+
+def generate_device_fingerprint_hash(
+    client_ip: Optional[str] = None,
+    user_agent: Optional[str] = None
+) -> str:
+    """
+    Computes a stable cryptographic hash of client IP subnet and user agent to defend against
+    session cookie / token hijacking (CWE-287 / CWE-384).
+    Uses /24 subnet mask on IPv4 to allow legitimate mobile gateway hops while stopping remote relay.
+    """
+    ip_norm = (client_ip or "127.0.0.1").strip()
+    try:
+        ip_obj = ipaddress.ip_address(ip_norm)
+        if ip_obj.version == 4:
+            # /24 subnet grouping
+            parts = ip_norm.split(".")
+            subnet = ".".join(parts[:3]) if len(parts) == 4 else ip_norm
+        else:
+            # IPv6 /48 grouping
+            subnet = ":".join(ip_norm.split(":")[:3])
+    except ValueError:
+        subnet = ip_norm
+
+    ua_norm = (user_agent or "unknown").strip().lower()
+    raw = f"{subnet}|{ua_norm}"
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:32]
+
+
+def verify_token_device_binding(
+    payload: Dict[str, Any],
+    current_ip: Optional[str] = None,
+    current_ua: Optional[str] = None
+) -> tuple[bool, Optional[str]]:
+    """
+    Validates whether a presented JWT token matches the original issuing client fingerprint.
+    Stops Trojan extensions (e.g. AggrTrade) from exfiltrating cookies for unauthorized execution.
+    """
+    token_dph = payload.get("dph")
+    if not token_dph:
+        # Token was issued without strict device binding
+        return True, None
+
+    current_dph = generate_device_fingerprint_hash(current_ip, current_ua)
+    if not secrets.compare_digest(token_dph, current_dph):
+        return False, (
+            "SESSION_HIJACK_DETECTED: Active token presented from mismatched client IP subnet or "
+            "browser fingerprint. Potential stolen session cookie or unauthorized token relay."
+        )
+
+    return True, None
+
+
 def create_access_token(
     user_id: int,
     username: str,
     role: str,
-    expires_delta: Optional[timedelta] = None
+    expires_delta: Optional[timedelta] = None,
+    client_ip: Optional[str] = None,
+    user_agent: Optional[str] = None,
+    device_fingerprint: Optional[str] = None
 ) -> str:
-    """Issues a cryptographically signed JWT access token."""
+    """Issues a cryptographically signed JWT access token with optional device-binding."""
     expire = datetime.now(timezone.utc) + (
         expires_delta or timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
@@ -174,6 +236,12 @@ def create_access_token(
         "exp": expire,
         "iat": datetime.now(timezone.utc)
     }
+    # Embed device fingerprint hash if client context is provided
+    if device_fingerprint:
+        payload["dph"] = device_fingerprint
+    elif client_ip or user_agent:
+        payload["dph"] = generate_device_fingerprint_hash(client_ip, user_agent)
+
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 

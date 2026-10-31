@@ -60,6 +60,29 @@ class StructuringResult:
     reasons: List[str]
 
 
+
+@dataclass
+class AddressPoisoningResult:
+    is_address_poisoning_detected: bool
+    is_dust_attack: bool
+    lookalike_matched_beneficiary: Optional[str]
+    prefix_match: str
+    suffix_match: str
+    middle_entropy_divergence: float
+    threat_score: float
+    reasons: List[str]
+
+
+@dataclass
+class CounterTradingResult:
+    is_counter_trading_detected: bool
+    price_divergence_pct: float
+    is_illiquid_market: bool
+    threat_score: float
+    recommended_action: str
+    reasons: List[str]
+
+
 class ThreatIntelligenceEngine:
     def __init__(self, max_commercial_speed_kmh: float = 850.0):
         self.max_commercial_speed_kmh = max_commercial_speed_kmh
@@ -334,3 +357,167 @@ class ThreatIntelligenceEngine:
             "threat_score": threat_score,
             "diagnosis": "MULE_LIQUIDITY_FUNNEL_SUSPECTED" if is_mule else "STANDARD_ACCOUNT_HOLDING"
         }
+
+
+    # =========================================================================
+    # 5. CRYPTO ADDRESS POISONING & LOOKALIKE VANITY DETECTOR (CWE-290 / CWE-1021)
+    # =========================================================================
+    def evaluate_crypto_address_poisoning(
+        self,
+        target_address: str,
+        known_beneficiaries: Optional[List[str]] = None,
+        amount: float = 0.0,
+        is_zero_value_dust: bool = False,
+        prefix_len: int = 5,
+        suffix_len: int = 5
+    ) -> AddressPoisoningResult:
+        """
+        Detects zero-value and dust address poisoning / lookalike vanity address spoofing.
+        Catches attack patterns where malicious addresses share matching prefixes & suffixes
+        with known beneficiaries to trick victims into copying from transaction history.
+        """
+        reasons = []
+        threat = 0.0
+        norm_target = target_address.strip().lower()
+        if norm_target.startswith("0x"):
+            norm_target = norm_target[2:]
+
+        matched_beneficiary = None
+        matched_prefix = ""
+        matched_suffix = ""
+        entropy_divergence = 0.0
+        is_poisoning = False
+
+        # 1. Compare against known frequent beneficiary addresses
+        candidates = known_beneficiaries or []
+        for ben in candidates:
+            norm_ben = ben.strip().lower()
+            if norm_ben.startswith("0x"):
+                norm_ben = norm_ben[2:]
+
+            # If addresses are completely identical, this is the authentic beneficiary
+            if norm_target == norm_ben:
+                continue
+
+            # Check if length is comparable (e.g. EVM 40 hex chars, Solana 32-44, BTC)
+            if len(norm_target) >= 12 and len(norm_ben) >= 12:
+                target_pfx = norm_target[:prefix_len]
+                target_sfx = norm_target[-suffix_len:]
+                ben_pfx = norm_ben[:prefix_len]
+                ben_sfx = norm_ben[-suffix_len:]
+
+                if target_pfx == ben_pfx and target_sfx == ben_sfx:
+                    # Calculate middle divergence (Hamming distance across middle segment)
+                    mid_target = norm_target[prefix_len:-suffix_len]
+                    mid_ben = norm_ben[prefix_len:-suffix_len]
+                    min_len = min(len(mid_target), len(mid_ben))
+                    diffs = sum(1 for i in range(min_len) if mid_target[i] != mid_ben[i])
+                    div_ratio = diffs / max(min_len, 1)
+
+                    if div_ratio >= 0.50:
+                        is_poisoning = True
+                        matched_beneficiary = ben
+                        matched_prefix = target_pfx
+                        matched_suffix = target_sfx
+                        entropy_divergence = round(div_ratio, 4)
+                        threat += 0.95
+                        reasons.append(
+                            f"ADDRESS_POISONING_VANITY_SPOOF: Target address '{target_address}' shares prefix "
+                            f"'{target_pfx}...' and suffix '...{target_sfx}' with authentic beneficiary '{ben}', "
+                            f"but middle entropy diverges by {div_ratio*100:.1f}%. Zero-value lookalike clone intercepted!"
+                        )
+                        break
+
+        # 2. Check for zero-value or dust poisoning injection attempt
+        is_dust = is_zero_value_dust or (amount <= 0.0001 and amount >= 0.0)
+        if is_dust:
+            threat += 0.45
+            reasons.append(
+                f"ZERO_VALUE_DUST_INJECTION: Near-zero or zero-value transaction detected (${amount:.6f}). "
+                f"Classic history-poisoning signature designed to plant spoofed destination into recent feed."
+            )
+
+        threat_score = min(0.99, threat)
+        if not reasons:
+            reasons.append("Destination address entropy and counterparty history verified nominal.")
+
+        return AddressPoisoningResult(
+            is_address_poisoning_detected=is_poisoning or (is_dust and threat_score >= 0.80),
+            is_dust_attack=is_dust,
+            lookalike_matched_beneficiary=matched_beneficiary,
+            prefix_match=matched_prefix,
+            suffix_match=matched_suffix,
+            middle_entropy_divergence=entropy_divergence,
+            threat_score=round(threat_score, 4),
+            reasons=reasons
+        )
+
+    # =========================================================================
+    # 6. ILLIQUID COUNTER-TRADING & SLIPPAGE DRAIN SENTINEL (CWE-829 / CWE-362)
+    # =========================================================================
+    def evaluate_counter_trading_anomaly(
+        self,
+        symbol: str,
+        trade_type: str,
+        volume: float,
+        execution_price: float,
+        reference_index_price: float,
+        order_book_depth_usd: float = 10000.0
+    ) -> CounterTradingResult:
+        """
+        Detects Binance-style rogue browser-extension / cookie-theft siphoning where
+        attackers cross-trade illiquid pairs at inflated/deflated prices against victim balances.
+        """
+        reasons = []
+        threat = 0.0
+
+        if reference_index_price <= 0.0:
+            reference_index_price = max(execution_price, 0.01)
+
+        divergence_pct = abs(execution_price - reference_index_price) / reference_index_price * 100.0
+        trade_value_usd = volume * execution_price
+        is_illiquid = order_book_depth_usd < 25000.0 or (trade_value_usd > 0.40 * order_book_depth_usd)
+
+        # Severe price divergence on buys (paying 50%+ over market) or sells (dumping 50%+ below market)
+        if divergence_pct >= 40.0:
+            threat += 0.85
+            reasons.append(
+                f"SEVERE_PRICE_DIVERGENCE: Execution price (${execution_price:,.4f}) diverges by "
+                f"{divergence_pct:.1f}% from fair index (${reference_index_price:,.4f}). "
+                f"Severe anomaly indicating artificial illiquid pair cross-trading siphon."
+            )
+        elif divergence_pct >= 15.0:
+            threat += 0.50
+            reasons.append(
+                f"ELEVATED_SLIPPAGE: Price deviates by {divergence_pct:.1f}% from benchmark reference rate."
+            )
+
+        # Illiquid market drain factor
+        if is_illiquid and divergence_pct >= 15.0:
+            threat += 0.35
+            reasons.append(
+                f"THIN_ORDER_BOOK_EXPLOITATION: Trade value (${trade_value_usd:,.2f}) overwhelms thin market "
+                f"depth (${order_book_depth_usd:,.2f}). Characteristic of account draining via low-cap tokens."
+            )
+
+        threat_score = min(0.99, threat)
+        is_detected = threat_score >= 0.65
+
+        if threat_score >= 0.80:
+            action = "HARD_BLOCK_QUARANTINE"
+        elif threat_score >= 0.50:
+            action = "STEP_UP_BIOMETRIC_2FA"
+        else:
+            action = "FRICTIONLESS_ALLOW"
+
+        if not reasons:
+            reasons.append("Trading execution price, liquidity depth, and spread adhere to standard market parameters.")
+
+        return CounterTradingResult(
+            is_counter_trading_detected=is_detected,
+            price_divergence_pct=round(divergence_pct, 2),
+            is_illiquid_market=is_illiquid,
+            threat_score=round(threat_score, 4),
+            recommended_action=action,
+            reasons=reasons
+        )

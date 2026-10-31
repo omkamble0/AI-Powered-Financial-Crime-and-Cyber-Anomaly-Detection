@@ -1,3 +1,4 @@
+from dataclasses import asdict
 import os
 import io
 import sys
@@ -95,15 +96,88 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-@app.middleware("http")
-async def add_security_headers(request: Request, call_next):
-    """Enforces OWASP-standard HTTP defense-in-depth headers across all responses."""
-    response = await call_next(request)
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
-    return response
+class SecurityAndObservabilityMiddleware:
+    """
+    Pure ASGI middleware for Cloud Security, OWASP / PCI-DSS 4.0 headers,
+    W3C TraceContext propagation, and sub-millisecond egress latency telemetry.
+    Eliminates BaseHTTPMiddleware thread-pool deadlock entirely.
+    """
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        headers_dict = dict(scope.get("headers", []))
+        req_id_raw = headers_dict.get(b"x-request-id")
+        request_id = req_id_raw.decode("latin1") if req_id_raw else f"fincipher-{uuid.uuid4().hex[:16]}"
+        tp_raw = headers_dict.get(b"traceparent")
+        incoming_traceparent = tp_raw.decode("latin1") if tp_raw else None
+
+        path = scope.get("path", "")
+        method = scope.get("method", "GET")
+        start_time = time.perf_counter()
+
+        from src.engine.tracer import tracer
+        with tracer.start_span(f"http.{method.lower()} {path}", parent_header=incoming_traceparent) as span:
+            span.set_attribute("http.method", method)
+            span.set_attribute("http.url", path)
+            span.set_attribute("http.request_id", request_id)
+
+            traceparent_val = tracer.format_w3c_traceparent(span.trace_id, span.span_id).encode("latin1")
+            trace_id_val = span.trace_id.encode("latin1")
+
+            # Max request body size guard (25MB for /upload datasets, 2MB for transactional JSON)
+            cl_raw = headers_dict.get(b"content-length")
+            if cl_raw:
+                try:
+                    cl = int(cl_raw)
+                    max_bytes = 25 * 1024 * 1024 if "/upload" in path else 2 * 1024 * 1024
+                    if cl > max_bytes:
+                        span.finish(status="ERROR")
+                        err_body = json.dumps({"error": "Payload Too Large", "message": f"Request body exceeds {max_bytes} byte limit"}).encode("utf-8")
+                        await send({
+                            "type": "http.response.start",
+                            "status": 413,
+                            "headers": [
+                                (b"content-type", b"application/json"),
+                                (b"content-length", str(len(err_body)).encode("latin1")),
+                                (b"x-request-id", request_id.encode("latin1")),
+                                (b"traceparent", traceparent_val),
+                                (b"x-trace-id", trace_id_val),
+                            ]
+                        })
+                        await send({"type": "http.response.body", "body": err_body})
+                        return
+                except ValueError:
+                    pass
+
+            async def send_wrapper(message):
+                if message["type"] == "http.response.start":
+                    elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
+                    span.set_attribute("http.status_code", message.get("status", 200))
+
+                    headers = list(message.get("headers", []))
+                    headers.append((b"strict-transport-security", b"max-age=31536000; includeSubDomains; preload"))
+                    headers.append((b"x-content-type-options", b"nosniff"))
+                    headers.append((b"x-frame-options", b"DENY"))
+                    headers.append((b"x-xss-protection", b"1; mode=block"))
+                    headers.append((b"referrer-policy", b"strict-origin-when-cross-origin"))
+                    headers.append((b"x-permitted-cross-domain-policies", b"none"))
+                    headers.append((b"permissions-policy", b"geolocation=(), camera=(), microphone=(), payment=()"))
+                    headers.append((b"x-request-id", request_id.encode("latin1")))
+                    headers.append((b"x-response-time-ms", str(elapsed_ms).encode("latin1")))
+                    headers.append((b"server", b"AegisFlow-IndustrialEdge/2.3"))
+                    headers.append((b"traceparent", traceparent_val))
+                    headers.append((b"x-trace-id", trace_id_val))
+                    message["headers"] = headers
+                await send(message)
+
+            await self.app(scope, receive, send_wrapper)
+
+app.add_middleware(SecurityAndObservabilityMiddleware)
 
 
 # =============================================================================
@@ -152,65 +226,7 @@ def record_login_success(client_ip: str, identifier: str):
 
 APP_START_TIME = time.time()
 
-@app.middleware("http")
-async def cloud_security_and_observability_middleware(request: Request, call_next):
-    """
-    Industrial Cloud Security & Distributed Observability Middleware.
-    - PCI-DSS 4.0 / CIS compliant HTTP security headers
-    - OpenTelemetry / W3C TraceContext distributed correlation (X-Request-ID, traceparent, X-Trace-ID)
-    - DoS Protection: Maximum body size validation
-    - Real-time egress latency instrumentation (X-Response-Time-Ms)
-    """
-    from src.engine.tracer import tracer
-
-    request_id = request.headers.get("X-Request-ID") or f"aegis-{uuid.uuid4().hex[:16]}"
-    incoming_traceparent = request.headers.get("traceparent")
-    start_time = time.perf_counter()
-
-    with tracer.start_span(f"http.{request.method.lower()} {request.url.path}", parent_header=incoming_traceparent) as span:
-        span.set_attribute("http.method", request.method)
-        span.set_attribute("http.url", str(request.url.path))
-        span.set_attribute("http.request_id", request_id)
-
-        # Max request body size guard (15MB for datasets, 2MB for transactional JSON)
-        content_length = request.headers.get("content-length")
-        if content_length:
-            try:
-                cl = int(content_length)
-                max_bytes = 25 * 1024 * 1024 if "/upload" in request.url.path else 2 * 1024 * 1024
-                if cl > max_bytes:
-                    span.finish(status="ERROR")
-                    return JSONResponse(
-                        status_code=413,
-                        content={"error": "Payload Too Large", "message": f"Request body exceeds {max_bytes} byte limit"},
-                        headers={
-                            "X-Request-ID": request_id,
-                            "traceparent": tracer.format_w3c_traceparent(span.trace_id, span.span_id),
-                            "X-Trace-ID": span.trace_id
-                        }
-                    )
-            except ValueError:
-                pass
-
-        response = await call_next(request)
-        elapsed_ms = round((time.perf_counter() - start_time) * 1000, 3)
-        span.set_attribute("http.status_code", response.status_code)
-
-        # Cloud Security Headers (OWASP Top 10 & PCI-DSS 4.0 Requirement 6.4.3)
-        response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains; preload"
-        response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["X-Frame-Options"] = "DENY"
-        response.headers["X-XSS-Protection"] = "1; mode=block"
-        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-        response.headers["X-Permitted-Cross-Domain-Policies"] = "none"
-        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=(), payment=()"
-        response.headers["X-Request-ID"] = request_id
-        response.headers["X-Response-Time-Ms"] = str(elapsed_ms)
-        response.headers["Server"] = "AegisFlow-IndustrialEdge/2.3"
-        response.headers["traceparent"] = tracer.format_w3c_traceparent(span.trace_id, span.span_id)
-        response.headers["X-Trace-ID"] = span.trace_id
-
-        return response
+# Replaced with pure ASGI SecurityAndObservabilityMiddleware
 
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "../.."))
@@ -1674,6 +1690,21 @@ class StructuringCheckRequest(BaseModel):
     amount: float
     timestamp: Optional[float] = None
 
+class AddressPoisoningCheckRequest(BaseModel):
+    target_address: str
+    known_beneficiaries: Optional[List[str]] = None
+    amount: float = 0.0
+    is_zero_value_dust: bool = False
+
+class CounterTradingCheckRequest(BaseModel):
+    symbol: str
+    trade_type: str = "BUY"
+    volume: float = 1.0
+    execution_price: float
+    reference_index_price: float
+    order_book_depth_usd: float = 10000.0
+
+
 
 @app.post("/api/v1/copilot/langchain-investigate")
 def api_langchain_investigate(req: LangChainInvestigateRequest):
@@ -1731,6 +1762,33 @@ def api_aml_structuring_check(req: StructuringCheckRequest):
     return asdict(res)
 
 
+@app.post("/api/v1/crypto/address-poisoning-check")
+def api_address_poisoning_check(req: AddressPoisoningCheckRequest):
+    """Detects zero-value and dust address poisoning / lookalike vanity address spoofing."""
+    res = threat_intel_engine.evaluate_crypto_address_poisoning(
+        target_address=req.target_address,
+        known_beneficiaries=req.known_beneficiaries,
+        amount=req.amount,
+        is_zero_value_dust=req.is_zero_value_dust
+    )
+    return asdict(res)
+
+
+@app.post("/api/v1/market/counter-trading-check")
+def api_counter_trading_check(req: CounterTradingCheckRequest):
+    """Detects rogue extension / cookie-theft siphoning via illiquid cross-trading and extreme slippage."""
+    res = threat_intel_engine.evaluate_counter_trading_anomaly(
+        symbol=req.symbol,
+        trade_type=req.trade_type,
+        volume=req.volume,
+        execution_price=req.execution_price,
+        reference_index_price=req.reference_index_price,
+        order_book_depth_usd=req.order_book_depth_usd
+    )
+    return asdict(res)
+
+
+
 @app.get("/api/v1/copilot/threat-concepts")
 def api_get_threat_concepts():
     """Returns active cybersecurity and fraud anomaly concepts supported by FinCipher AI."""
@@ -1778,6 +1836,24 @@ def api_get_threat_concepts():
                 "name": "Universal Dynamic Graph Topology & CPP Forensics Engine",
                 "technique": "Bipartite Network Graph / Node Degree Analysis",
                 "description": "Constructs real-time Card ↔ Merchant ↔ IP bipartite graph across public schemes and private enterprise tokens to spot Common Points of Purchase (CPP) and distributed carding rings."
+            },
+            {
+                "id": "crypto_address_poisoning",
+                "name": "Crypto Address Poisoning & Lookalike Vanity Detector",
+                "technique": "MITRE ATT&CK T1036 / CWE-290",
+                "description": "Scans destination addresses for lookalike vanity spoofing (identical prefix/suffix with diverging middle hash) and zero-value dust injection attempting to contaminate user wallet history."
+            },
+            {
+                "id": "counter_trading_siphon",
+                "name": "Illiquid Pair Counter-Trading Siphon Guard",
+                "technique": "MITRE ATT&CK T1539 / CWE-829",
+                "description": "Intercepts unauthorized cross-trading drain schemes (as seen in Trojan browser extensions) by monitoring abnormal price slippage and low-depth order-book volume divergence."
+            },
+            {
+                "id": "session_device_binding",
+                "name": "Cryptographic Token-Device Fingerprint Binding",
+                "technique": "CWE-384 / CWE-287",
+                "description": "Cryptographically ties active JWT access tokens to client IP subnets and device canvas hashes, blocking stolen session cookie replay."
             },
             {
                 "id": "anti_hallucination",
