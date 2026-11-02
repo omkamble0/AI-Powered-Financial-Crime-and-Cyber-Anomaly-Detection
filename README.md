@@ -1,4 +1,4 @@
-# 🛡️ FinCipher AI — Secure Explainable AI Financial Fraud & Cyber-Anomaly Detection Platform
+# 🛡️ FinCipher AI — Financial Fraud and Cyber-Anomaly Monitoring, Detection, and Mitigation Platform.
 
 <p align="center">
   <a href="https://github.com/omkamble0/Cognitive-Financial-Crime-and-Cyber-Anomaly-Detection-Engine/actions/workflows/ci.yml">
