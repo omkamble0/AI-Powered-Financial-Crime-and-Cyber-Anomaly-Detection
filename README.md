@@ -156,23 +156,6 @@ Employs an advanced LangChain multi-tool reasoning pipeline that dynamically orc
 * **Latent Behavioral Subspace Attributions (`tool_xai_latent_deviations`)**: Pinpoints exact mathematical deviations in latent PCA components.
 * **Chain-of-Thought (CoT) Forensic Synthesis**: Generates step-by-step MITRE ATT&CK taxonomy mappings (`T1078.004`, `T1499.003`, `T1059.006`) and Zero-Trust enforcement dispositions (`HARD_BLOCK_QUARANTINE`, `STEP_UP_BIOMETRIC_2FA`, `TRANSACTION_SANCTION_HOLD`).
 
-### ⚔️ 9. Adversarial Machine Learning Arena (Red Team vs. Blue Team)
-A real-time stress-testing arena that pits an AI adversary against FinCipher AI's multi-layered defense citadel:
-* **🔴 Red Team Attacker Engine**:
-  * **Fast Gradient Sign Method (FGSM)**: Evaluates loss gradients $\nabla_x \mathcal{L}_{fraud}(x)$ and mathematically perturbs key features ($x_{adv} = x - \epsilon \cdot \text{sign}(\nabla_x \mathcal{L})$) to artificially depress supervised classifier risk scores below 0.40.
-  * **Gaussian Feature Camouflage (Smurfing)**: Projects anomalous dimensions back toward standard Gaussian manifolds while fragmenting payouts into sub-$50 subscription payments.
-  * **WGAN-GP Latent Manifold Spoofing**: Synthesizes evasive fraud vectors using the generative network $G(z)$ with bounded latent perturbations.
-  * **Cadence & Velocity Cloaking**: Injects temporal and diurnal jitter to defeat sliding-window velocity filters.
-* **🔵 Blue Team Defense Citadel**:
-  * **Manifold Reconstruction Residual Anomaly**: Computes L2 divergence $||x_{adv} - G(E(x_{adv}))||_2$. Adversarial perturbations engineered to blind tree models fundamentally warp the empirical latent manifold, triggering immediate detection.
-  * **Critic Realism Consensus**: Joint discriminator verification $D(x, z)$ detects synthetic evasion artifacts.
-  * **Dynamic Defensive Boundary Hardening**: When an attack wave is detected, anomaly thresholds automatically contract (e.g., from $\tau = 0.65$ down to $0.45$), tightening perimeter defenses in real time.
-* **Interactive 1v1 Skirmishes & Automated War Games**: Real-time battle collision zone with dual gauges, feature delta breakdown, and automated 15-round war games running at $< 0.5\text{ms}$ latency.
-
-### ⚙️ 10. Dynamic Risk Rules Studio
-Configurable rule lifecycle management and real-time policy hot-reloading via REST API (`/api/v1/rules/dynamic`):
-* **Hot-Deployable Rule Definitions**: Empowers fraud risk officers to define threshold predicates on transaction fields (`Amount`, `V14`, `velocity_1h`, `device_trust_score`, etc.) with zero platform downtime.
-* **Granular Dispositions & Priority**: Rules configure dynamic actions (`BLOCK`, `CHALLENGE_2FA`, `MANUAL_REVIEW`, `FLAG`) with priority routing and instant active/disabled toggling.
 
 ### 💳 11. EMVCo 3DS 2.3 Risk-Based Authentication (RBA)
 Production-aligned 3DS 2.3 decisioning with interactive step-up challenges:
@@ -210,72 +193,6 @@ Transforms the cognitive engine into a complete institutional fraud management p
 * **MLOps Model Registry & Promotion Quality Gates (`src/engine/model_registry.py`)**: Formal governance lifecycle (`STAGING` $\to$ `SHADOW` $\to$ `CANARY` $\to$ `PRODUCTION`) enforcing strict F1-score ($\ge 0.85$) and latency ($\le 3.5\text{ms}$) gates with automated rollback capability.
 * **CI/CD Security & Automation (`.github/workflows/ci.yml`)**: Continuous integration running flake8 static analysis, the complete 72-test suite, and CIS Docker container non-root audits (UID 10001).
 
----
-
-## 🧱 Project Structure
-
-```
-fraud-detection-system/
-├── dashboard/                     # Real-Time Monitoring UI (HTML5, CSS3 Glassmorphism, JS)
-│   ├── index.html                 # Financial cockpit & interactive simulator
-│   ├── style.css                  # Dark mode design tokens & cyberpunk accents
-│   └── app.js                     # WebSocket client & Chart.js visualizers
-├── data/
-│   └── creditcard.csv             # Kaggle credit card dataset (284,807 transactions)
-├── docker/
-│   ├── Dockerfile                 # Multi-stage Python container
-│   ├── docker-compose.yml         # Full orchestration (Kafka, Redis, Zookeeper, API)
-│   └── k8s/                       # Cloud-Native Kubernetes & Observability Manifests (Track 5)
-│       ├── deployment.yaml        # 3-replica rolling deployment with health probes
-│       ├── service.yaml           # ClusterIP service exposing API (8000) & Metrics (9090)
-│       ├── hpa.yaml               # Horizontal Pod Autoscaler (3 to 20 pods)
-│       ├── prometheus-config.yaml # Scrape configuration ConfigMap
-│       └── service-monitor.yaml   # Prometheus-Operator ServiceMonitor
-├── src/
-│   ├── api/
-│   │   └── main.py                # FastAPI app with WebSockets, XAI & Telemetry
-│   ├── engine/
-│   │   ├── universal_instrument.py# Universal Multi-Scheme & Dataset Abstraction (RuPay, Amex, Corp, Store, Visa, MC)
-│   │   ├── graph_engine.py        # Universal Bipartite Graph Topology & Common Point of Purchase (CPP) Engine
-│   │   ├── drift_monitor.py       # Population Stability Index (PSI) & Decile Drift Monitor
-│   │   ├── benchmark_runner.py    # High-Throughput Burst Simulator & Financial SLA Matrix
-│   │   ├── rules.py               # Hybrid Rule & Policy Decision Engine
-│   │   ├── explainability.py      # Explainable AI & Feature Attribution
-│   │   ├── copilot.py             # GenAI Cyber Copilot, SAR Generator & Threat Hunter
-│   │   ├── langchain_agent.py     # LangChain Multi-Tool Cognitive Cyber Threat Agent
-│   │   ├── threat_intelligence.py # Impossible Travel, Device Entropy & AML Structuring
-│   │   ├── carding_sentinel.py    # Botnet, BIN Probing & Micro-Auth Sentinel
-│   │   ├── audit_ledger.py        # Cryptographic SHA-256 Merkle Audit Ledger
-│   │   ├── currency.py            # Multi-Currency FX Engine (USD, JPY, EUR, GBP, INR, CAD, AUD)
-│   │   ├── canary_pipeline.py     # Champion / Challenger Canary Shadow Scoring & Zero-Downtime Hot Promotion
-│   │   ├── stress_tester.py       # High-Scale Concurrent Load Generator & Financial SLA Stress Matrix
-│   │   ├── gan_detector.py        # Swedbank BiGAN Latent Anomaly & Reconstruction Scorer
-│   │   ├── rl_policy.py           # LinUCB Contextual Multi-Armed Bandit Dynamic Policy
-│   │   └── universal_detector.py  # Adaptive Isolation Forest & EDA Profiler
-│   ├── model/
-│   │   ├── rf_model.pkl           # Pre-trained Random Forest model
-│   │   └── scaler.pkl             # StandardScaler artifact
-│   ├── streaming/
-│   │   ├── kafka_producer.py      # Event streaming producer
-│   │   ├── kafka_consumer.py      # Real-time consumer & scoring pipeline
-│   │   ├── redis_feature_store.py # Sliding-window velocity & entity profile store
-│   │   └── simulator.py           # Synthetic stream generator & stress benchmark CLI
-│   └── training/
-│       ├── features.py            # Feature engineering & scaling
-│       ├── gan_augmenter.py       # Swedbank WGAN Synthetic Minority Oversampling
-│       └── train.py               # Multi-core training pipeline (Stratified K-Fold)
-├── data/
-│   ├── sample_creditcard_pca.csv          # Kaggle PCA 28-subspace sample
-│   ├── sample_ecommerce_orders.csv        # Multi-variable checkout transactions
-│   ├── sample_p2p_wire_transfers.csv      # P2P & international wire transfers
-│   └── sample_private_corporate_cards.csv # Private enterprise expense & fleet cards
-├── tests/
-│   └── test_pipeline.py           # Comprehensive automated unit & integration tests (35/35 passing)
-├── requirements.txt
-└── README.md
-```
-
----
 
 ## ⚡ Quick Start
 
