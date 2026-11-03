@@ -1209,7 +1209,7 @@ function feedHomeDashboardStreamEvent(ev) {
     `;
 
     tbody.insertBefore(tr, tbody.firstChild);
-    if (tbody.children.length > 40) tbody.removeChild(tbody.lastChild);
+    if (tbody.children.length > 200) tbody.removeChild(tbody.lastChild);
 
     const btnInspect = tr.querySelector(".btn-inspect-row");
     if (btnInspect) {
@@ -1426,7 +1426,7 @@ function appendLiveRadarRow(tx) {
   `;
 
   tbody.insertBefore(tr, tbody.firstChild);
-  if (tbody.children.length > 30) tbody.removeChild(tbody.lastChild);
+  if (tbody.children.length > 200) tbody.removeChild(tbody.lastChild);
 
   // Also update Cyber Defense feeds if relevant
   if (tx.audit_ledger || tx.cyber_intel) {
@@ -4542,20 +4542,64 @@ function initAdversarialArena() {
 // ==============================================================
 let streamerPollingInterval = null;
 
+let isStreamerToggling = false;
+
+async function toggleStreamingPipeline() {
+  if (isStreamerToggling) return;
+  isStreamerToggling = true;
+
+  const btnToggle = document.getElementById("btnToggleContinuousStream");
+  const btnHomeToggle = document.getElementById("btnHomeToggleStream");
+  const slider = document.getElementById("streamerTpsSlider");
+
+  if (btnToggle) btnToggle.disabled = true;
+  if (btnHomeToggle) btnHomeToggle.disabled = true;
+
+  try {
+    const isRunning = (btnToggle && btnToggle.getAttribute("data-running") === "true") ||
+                      (btnHomeToggle && btnHomeToggle.getAttribute("data-running") === "true");
+
+    if (isRunning) {
+      const res = await fetch("/api/v1/streamer/stop", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }
+      });
+      const data = await res.json();
+      updateStreamerUI(data);
+      showToast("Live streaming ingestion paused.", "info");
+    } else {
+      const tps = slider ? parseFloat(slider.value) : 25.0;
+      const activeDomBtn = document.querySelector(".stream-domain-btn.active");
+      const domain = activeDomBtn ? activeDomBtn.getAttribute("data-domain") : (currentActiveDomain || "ALL");
+
+      const res = await fetch("/api/v1/streamer/start", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tps: tps, fraud_ratio: 0.08, domain: domain })
+      });
+      const data = await res.json();
+      updateStreamerUI(data);
+      showToast(`Live streaming active at ${(data.target_tps || tps).toFixed(1)} TPS (${domain})`, "success");
+    }
+  } catch (err) {
+    console.error("Failed to toggle streamer:", err);
+    showToast("Streaming engine communication error: " + err.message, "danger");
+  } finally {
+    isStreamerToggling = false;
+    if (btnToggle) btnToggle.disabled = false;
+    if (btnHomeToggle) btnHomeToggle.disabled = false;
+  }
+}
+
 function initContinuousStreamerCockpit() {
   const btnToggle = document.getElementById("btnToggleContinuousStream");
   const btnHomeToggle = document.getElementById("btnHomeToggleStream");
-  const homePill = document.getElementById("homeStreamStatusPill");
 
-  if (btnHomeToggle && btnToggle) {
-    btnHomeToggle.addEventListener("click", () => {
-      btnToggle.click();
-    });
+  if (btnToggle) {
+    btnToggle.addEventListener("click", toggleStreamingPipeline);
   }
-  if (homePill && btnToggle) {
-    homePill.addEventListener("click", () => {
-      btnToggle.click();
-    });
+  if (btnHomeToggle) {
+    btnHomeToggle.addEventListener("click", toggleStreamingPipeline);
   }
   const slider = document.getElementById("streamerTpsSlider");
   const tpsVal = document.getElementById("streamerTpsVal");
@@ -4647,36 +4691,7 @@ function initContinuousStreamerCockpit() {
     });
   }
 
-  if (btnToggle) {
-    btnToggle.addEventListener("click", async () => {
-      btnToggle.disabled = true;
-      try {
-        const isRunning = btnToggle.getAttribute("data-running") === "true";
-        if (isRunning) {
-          const res = await fetch("/api/v1/streamer/stop", { method: "POST" });
-          const data = await res.json();
-          updateStreamerUI(data);
-          showToast("Continuous background streamer paused", "info");
-        } else {
-          const tps = slider ? parseFloat(slider.value) : 25.0;
-          const activeDomBtn = document.querySelector(".stream-domain-btn.active");
-          const domain = activeDomBtn ? activeDomBtn.getAttribute("data-domain") : "ALL";
-          const res = await fetch("/api/v1/streamer/start", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ tps: tps, fraud_ratio: 0.08, domain: domain })
-          });
-          const data = await res.json();
-          updateStreamerUI(data);
-          showToast(`Continuous streamer active at ${tps.toFixed(1)} TPS (${domain})`, "success");
-        }
-      } catch (err) {
-        console.error("Failed to toggle streamer:", err);
-      } finally {
-        btnToggle.disabled = false;
-      }
-    });
-  }
+  // Note: btnToggle and btnHomeToggle click listeners bound via toggleStreamingPipeline
 
   if (btnShock && shockSelect) {
     btnShock.addEventListener("click", async () => {
@@ -4777,9 +4792,9 @@ function updateStreamerUI(status) {
   const btnToggle = document.getElementById("btnToggleContinuousStream");
   const btnHomeToggle = document.getElementById("btnHomeToggleStream");
   const pill = document.getElementById("streamerStatusPill");
-  const homePill = document.getElementById("homeStreamStatusPill");
   const statusText = document.getElementById("streamerStatusText");
   const homeStatusText = document.getElementById("homeStreamStatusText");
+  const homeActionText = document.getElementById("homeStreamActionText");
   const statsBadge = document.getElementById("streamerStatsBadge");
   const liveMeasuredTps = document.getElementById("liveMeasuredTps");
   const telemetryTargetTps = document.getElementById("telemetryTargetTps");
@@ -4788,7 +4803,10 @@ function updateStreamerUI(status) {
   const liveStreamerSummary = document.getElementById("liveStreamerSummary");
   const telemetryActiveShock = document.getElementById("telemetryActiveShock");
 
-  if (status.is_running) {
+  const isRunning = Boolean(status.is_running);
+  const targetTps = status.target_tps || 25.0;
+
+  if (isRunning) {
     if (btnToggle) {
       btnToggle.setAttribute("data-running", "true");
       btnToggle.className = "btn btn-outline-sm";
@@ -4796,14 +4814,13 @@ function updateStreamerUI(status) {
     }
     if (btnHomeToggle) {
       btnHomeToggle.setAttribute("data-running", "true");
-      btnHomeToggle.className = "btn btn-rose-sm";
-      btnHomeToggle.innerHTML = "⏸ Pause Stream";
+      btnHomeToggle.classList.add("running");
     }
     if (pill) pill.className = "streamer-status-pill running";
-    if (homePill) homePill.className = "streamer-status-pill running";
-    const label = `STREAMING (${(status.target_tps || 25).toFixed(0)} TPS)`;
+    const label = `STREAMING (${targetTps.toFixed(0)} TPS)`;
     if (statusText) statusText.textContent = label;
     if (homeStatusText) homeStatusText.textContent = label;
+    if (homeActionText) homeActionText.textContent = "⏸ Pause";
   } else {
     if (btnToggle) {
       btnToggle.setAttribute("data-running", "false");
@@ -4812,13 +4829,12 @@ function updateStreamerUI(status) {
     }
     if (btnHomeToggle) {
       btnHomeToggle.setAttribute("data-running", "false");
-      btnHomeToggle.className = "btn btn-outline-sm";
-      btnHomeToggle.innerHTML = "▶ Stream Live";
+      btnHomeToggle.classList.remove("running");
     }
     if (pill) pill.className = "streamer-status-pill";
-    if (homePill) homePill.className = "streamer-status-pill";
     if (statusText) statusText.textContent = "STREAM IDLE";
     if (homeStatusText) homeStatusText.textContent = "STREAM IDLE";
+    if (homeActionText) homeActionText.textContent = "▶ Start Live";
   }
 
   if (liveMeasuredTps && status.instantaneous_tps !== undefined) {

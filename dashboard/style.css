@@ -3672,3 +3672,119 @@ input[type="range"] {
 
 
 
+
+/* ============================================================== */
+/* UNIFIED MASTER STREAM TOGGLE & SCROLLABLE DATA TABLES          */
+/* ============================================================== */
+
+.btn-live-stream-master {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 16px;
+  border-radius: 9999px;
+  background: #ffffff;
+  border: 1.5px solid #cbd5e1;
+  color: #1e293b;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  white-space: nowrap;
+}
+
+.btn-live-stream-master:hover {
+  background: #f8fafc;
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+}
+
+.btn-live-stream-master .live-stream-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #94a3b8;
+  transition: all 0.3s ease;
+  flex-shrink: 0;
+}
+
+.btn-live-stream-master .live-stream-status {
+  font-size: 11px;
+  font-weight: 800;
+  color: #64748b;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.btn-live-stream-master .live-stream-action {
+  font-size: 11px;
+  font-weight: 700;
+  color: #059669;
+  background: rgba(16, 185, 129, 0.12);
+  padding: 3px 8px;
+  border-radius: 9999px;
+  transition: all 0.2s ease;
+}
+
+/* Active running state */
+.btn-live-stream-master.running {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  border-color: #047857;
+  color: #ffffff;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+}
+
+.btn-live-stream-master.running .live-stream-dot {
+  background: #34d399;
+  box-shadow: 0 0 10px #34d399, 0 0 4px #ffffff;
+  animation: pulseGreen 1.4s infinite;
+}
+
+.btn-live-stream-master.running .live-stream-status {
+  color: #a7f3d0;
+}
+
+.btn-live-stream-master.running .live-stream-action {
+  color: #ffffff;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+/* HIGH-PERFORMANCE SCROLLABLE TABLES WITH STICKY HEADERS */
+.table-scroll-container {
+  width: 100%;
+  max-height: 480px;
+  overflow-y: auto;
+  overflow-x: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #ffffff;
+  position: relative;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.table-scroll-container::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 6px;
+}
+.table-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+.table-scroll-container::-webkit-scrollbar-track {
+  background: #f8fafc;
+}
+
+.table-scroll-container table thead th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  z-index: 10;
+  box-shadow: 0 1px 0 #e2e8f0;
+}

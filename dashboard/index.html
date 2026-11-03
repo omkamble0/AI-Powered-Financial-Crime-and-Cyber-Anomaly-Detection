@@ -175,12 +175,10 @@
                 <option value="ECOMMERCE" style="background: #0f172a; color: #f8fafc;">🛒 E-Commerce &amp; Retail</option>
               </select>
             </div>
-            <div class="streamer-status-pill" id="homeStreamStatusPill" style="cursor: pointer;" title="Toggle Continuous Real-Time Streaming Ingestion">
-              <span class="streamer-pulse-dot" id="homeStreamPulseDot"></span>
-              <span id="homeStreamStatusText">STREAM IDLE</span>
-            </div>
-            <button type="button" class="btn btn-outline-sm" id="btnHomeToggleStream" style="font-weight: 700; font-size: 11px;">
-              ▶ Stream Live
+            <button type="button" class="btn-live-stream-master" id="btnHomeToggleStream" data-running="false" title="Click to Toggle Real-Time Streaming Ingestion">
+              <span class="live-stream-dot" id="homeStreamPulseDot"></span>
+              <span class="live-stream-status" id="homeStreamStatusText">STREAM IDLE</span>
+              <span class="live-stream-action" id="homeStreamActionText">▶ Start Live</span>
             </button>
             <button type="button" class="btn btn-emerald" id="btnHeaderUpload">
               + Ingest Dataset
@@ -392,7 +390,7 @@
             </div>
           </div>
 
-          <div class="table-responsive">
+          <div class="table-responsive table-scroll-container" id="recentTransactionsScrollContainer">
             <table class="friendly-table">
               <thead>
                 <tr>
@@ -594,7 +592,7 @@
             </div>
           </div>
 
-          <div class="table-responsive" style="margin-top: 14px;">
+          <div class="table-responsive table-scroll-container" style="margin-top: 14px;">
             <table class="friendly-table" id="tierEventsTable">
               <thead>
                 <tr>
@@ -740,7 +738,7 @@
               <div class="kpi-sublabel">Automated health inspection of all dimensions in your dataset</div>
             </div>
           </div>
-          <div class="table-responsive" style="margin-top: 16px;">
+          <div class="table-responsive table-scroll-container" id="dataStudioScrollContainer" style="margin-top: 16px;">
             <table class="friendly-table">
               <thead>
                 <tr>
@@ -916,7 +914,7 @@
               <span class="scheme-badge-pill" id="streamerStatsBadge">0 Events Ingested</span>
             </div>
           </div>
-          <div class="table-responsive">
+          <div class="table-responsive table-scroll-container" id="liveStreamScrollContainer">
             <table class="friendly-table" id="streamLiveTable">
               <thead>
                 <tr>
