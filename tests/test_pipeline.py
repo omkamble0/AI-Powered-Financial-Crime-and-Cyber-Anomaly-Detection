@@ -415,45 +415,6 @@ class TestAegisFlowPipeline(unittest.TestCase):
         self.assertEqual(len(X_bal), len(y_bal))
         self.assertTrue(metrics["final_fraud_ratio"] >= 0.15)
 
-    def test_contextual_bandit_rl_agent_and_online_learning(self):
-        from src.engine.rl_policy import ContextualBanditPolicyAgent, ActionDecision
-        agent = ContextualBanditPolicyAgent(context_dim=7, alpha=0.2)
-
-        # 1. Clean low-risk transaction context
-        ctx_clean = {
-            "ml_score": 0.04,
-            "amount": 25.0,
-            "user_velocity_1m": 0,
-            "carding_threat_score": 0.0,
-            "device_trust_score": 0.98,
-            "graph_risk_score": 0.0
-        }
-        res_clean = agent.select_action(ctx_clean)
-        self.assertTrue(res_clean.latency_ms < 1.0)
-        self.assertEqual(res_clean.action, ActionDecision.APPROVE)
-
-        # 2. Suspicious burst context
-        ctx_burst = {
-            "ml_score": 0.72,
-            "amount": 850.0,
-            "user_velocity_1m": 4,
-            "carding_threat_score": 0.85,
-            "device_trust_score": 0.15,
-            "graph_risk_score": 0.75
-        }
-        res_burst = agent.select_action(ctx_burst)
-        self.assertIn(res_burst.action, (ActionDecision.BLOCK, ActionDecision.MANUAL_REVIEW, ActionDecision.CHALLENGE_2FA))
-
-        # 3. Online learning update: reward signal
-        initial_reward = agent.cumulative_reward
-        agent.update_policy(ctx_burst, ActionDecision.BLOCK, reward=10.0)
-        self.assertEqual(agent.cumulative_reward, initial_reward + 10.0)
-
-        # 4. Verify telemetry
-        telemetry = agent.get_telemetry()
-        self.assertEqual(telemetry["algorithm"], "LinUCB Disjoint Contextual Multi-Armed Bandit")
-        self.assertTrue(telemetry["total_decisions_served"] >= 2)
-
     def test_concept_drift_monitor_and_psi(self):
         from src.engine.drift_monitor import ConceptDriftMonitor
         monitor = ConceptDriftMonitor(window_size=200)
@@ -651,37 +612,6 @@ class TestAegisFlowPipeline(unittest.TestCase):
 
         stop_res = continuous_streamer.stop()
         self.assertFalse(continuous_streamer.is_running)
-
-    def test_adversarial_arena_skirmish_and_campaign(self):
-        from src.engine.adversarial_arena import adversarial_arena_engine, AttackStrategy
-
-        # Reset arena to clean baseline
-        adversarial_arena_engine.reset_arena()
-        self.assertEqual(adversarial_arena_engine.total_duels, 0)
-        self.assertEqual(adversarial_arena_engine.hardening_level, 0.0)
-
-        # 1v1 FGSM Skirmish
-        duel_fgsm = adversarial_arena_engine.execute_duel(
-            strategy=AttackStrategy.FGSM_EVASION,
-            epsilon=0.30
-        )
-        self.assertIsNotNone(duel_fgsm.duel_id)
-        self.assertIn(duel_fgsm.winner, ("BLUE_TEAM", "RED_TEAM"))
-        self.assertTrue(len(duel_fgsm.top_perturbed_features) > 0)
-        self.assertTrue(duel_fgsm.reconstruction_error > 0.0)
-
-        # Automated War Game Campaign
-        camp = adversarial_arena_engine.execute_campaign(rounds=6, epsilon_range=(0.15, 0.40))
-        self.assertEqual(camp["rounds_executed"], 6)
-        self.assertEqual(len(camp["rounds"]), 6)
-        self.assertTrue(camp["final_hardening_level"] >= 0.0)
-        self.assertTrue(adversarial_arena_engine.total_duels >= 7)
-
-        # Scoreboard
-        sb = adversarial_arena_engine.get_scoreboard()
-        self.assertIn("blue_win_rate_pct", sb)
-        self.assertIn("effective_threshold", sb)
-        self.assertTrue(len(sb["recent_duels"]) > 0)
 
     def test_dynamic_rule_studio(self):
         from src.engine.rules import rule_engine

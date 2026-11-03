@@ -12,7 +12,13 @@ from typing import Dict, Any, List, Tuple, Optional
 from dataclasses import dataclass, asdict
 from enum import Enum
 
-from src.engine.rl_policy import rl_policy_agent, ActionDecision, BanditDecisionResult
+
+class ActionDecision(str, Enum):
+    APPROVE = "APPROVE"
+    CHALLENGE_2FA = "CHALLENGE_2FA"
+    MANUAL_REVIEW = "MANUAL_REVIEW"
+    BLOCK = "BLOCK"
+
 
 
 @dataclass
@@ -318,54 +324,19 @@ class HybridRuleEngine:
 
         policy_mode = "DETERMINISTIC_RULES"
 
-        if is_hard_block:
-            decision = ActionDecision.BLOCK
+        decision = det_decision
+        if decision == ActionDecision.BLOCK:
             risk_level = "CRITICAL" if combined_score >= 0.90 else "HIGH"
             recommendation = "Decline transaction immediately and flag payment instrument for investigation."
-        elif self.use_rl:
-            # Contextual Multi-Armed Bandit RL Agent optimizes boundary tradeoffs
-            context = {
-                "ml_score": ml_score,
-                "amount": amount,
-                "user_velocity_1m": user_velocity_1m,
-                "carding_threat_score": carding_threat_score,
-                "device_trust_score": device_trust_score,
-                "graph_risk_score": max(0.0, combined_score - ml_score)
-            }
-            bandit_res = rl_policy_agent.select_action(context, override_hard_block=False)
-            rl_decision = bandit_res.action
-            policy_mode = "CONTEXTUAL_BANDIT_RL"
-
-            # Enforce safety invariant: if deterministic rules were triggered, do not relax below rule severity
-            if len(triggered_rules) > 0 and severity_map[rl_decision] < severity_map[det_decision]:
-                decision = det_decision
-            else:
-                decision = rl_decision
-
-            if decision == ActionDecision.BLOCK:
-                risk_level = "HIGH"
-                recommendation = "Policy allocated Block to minimize expected chargeback loss."
-            elif decision == ActionDecision.MANUAL_REVIEW:
-                risk_level = "HIGH"
-                recommendation = "Route to Tier-2 Fraud Analyst Queue for KYC/identity review."
-            elif decision == ActionDecision.CHALLENGE_2FA:
-                risk_level = "MEDIUM"
-                recommendation = "Prompt cardholder with dynamic 3D-Secure 2.3 / biometric challenge."
-            else:
-                decision = ActionDecision.APPROVE
-                risk_level = "LOW"
-                recommendation = "Authorize transaction with zero friction (Frictionless clearing)."
+        elif decision == ActionDecision.MANUAL_REVIEW:
+            risk_level = "HIGH"
+            recommendation = "Route to Tier-2 Fraud Analyst Queue for KYC/identity review."
+        elif decision == ActionDecision.CHALLENGE_2FA:
+            risk_level = "MEDIUM"
+            recommendation = "Prompt cardholder with 3D-Secure 2.3 / dynamic challenge."
         else:
-            decision = det_decision
-            if decision == ActionDecision.MANUAL_REVIEW:
-                risk_level = "HIGH"
-                recommendation = "Route to Tier-2 Fraud Analyst Queue for KYC/identity review."
-            elif decision == ActionDecision.CHALLENGE_2FA:
-                risk_level = "MEDIUM"
-                recommendation = "Prompt cardholder with 3D-Secure 2.3 / SMS OTP challenge."
-            else:
-                risk_level = "LOW"
-                recommendation = "Authorize transaction with zero friction."
+            risk_level = "LOW"
+            recommendation = "Authorize transaction with zero friction (Frictionless clearing)."
 
         return RuleEvaluationResult(
             decision=decision,

@@ -10,7 +10,6 @@ from typing import Dict, List, Any
 from src.engine.currency import currency_normalizer
 from src.engine.graph_engine import graph_engine
 from src.engine.gan_detector import gan_anomaly_detector
-from src.engine.rl_policy import rl_policy_agent
 from src.engine.rules import HybridRuleEngine
 from src.engine.audit_ledger import CryptographicAuditLedger
 
@@ -55,7 +54,7 @@ class ThroughputBenchmarkRunner:
             "currency_normalization": 0.0,
             "bipartite_graph": 0.0,
             "bigan_anomaly_reconstruction": 0.0,
-            "rl_bandit_action": 0.0,
+            "rule_policy_action": 0.0,
             "rule_enforcement": 0.0,
             "merkle_audit_hash": 0.0,
         }
@@ -100,7 +99,7 @@ class ThroughputBenchmarkRunner:
             )
             final_action = rule_res.decision
             decisions_count[final_action.value] = decisions_count.get(final_action.value, 0) + 1
-            stage_times_ms["rl_bandit_action"] += (time.perf_counter() - t3) * 1000
+            stage_times_ms["rule_policy_action"] += (time.perf_counter() - t3) * 1000
 
             # Stage 5: Merkle Cryptographic Audit Chaining
             t4 = time.perf_counter()

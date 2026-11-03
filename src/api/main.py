@@ -33,7 +33,6 @@ from src.engine.currency import currency_normalizer
 from src.engine.universal_instrument import universal_instrument_classifier
 from src.engine.graph_engine import graph_engine
 from src.engine.gan_detector import gan_anomaly_detector
-from src.engine.rl_policy import rl_policy_agent
 from src.engine.drift_monitor import concept_drift_monitor
 from src.engine.benchmark_runner import throughput_benchmark_runner
 from src.training.gan_augmenter import wgan_data_augmenter
@@ -45,7 +44,6 @@ from src.engine.stress_tester import stress_runner
 from src.engine.fast_filter import fast_threat_filter
 from src.engine.load_shedder import load_shedder
 from src.engine.async_enricher import async_enricher
-from src.engine.adversarial_arena import adversarial_arena_engine, AttackStrategy
 from src.engine.model_registry import model_registry
 from src.core.config import settings
 from src.core.security import (
@@ -1906,59 +1904,6 @@ def api_get_gan_adversarial_samples(count: int = 3):
     }
 
 
-class RLFeedbackPayload(BaseModel):
-    transaction_id: str
-    action: str  # "APPROVE", "CHALLENGE_2FA", "MANUAL_REVIEW", "BLOCK"
-    feedback: str  # "CONFIRMED_FRAUD", "FALSE_POSITIVE", "CLEAN_SETTLEMENT", "2FA_PASSED"
-    amount: Optional[float] = 100.0
-
-
-@app.post("/api/v1/rl/feedback")
-def api_rl_feedback(payload: RLFeedbackPayload):
-    """Online learning feedback endpoint for the Contextual Bandit policy agent."""
-    action_str = payload.action.upper()
-    feedback_str = payload.feedback.upper()
-    amt = float(payload.amount or 100.0)
-
-    # Compute payoff reward
-    if action_str == "BLOCK":
-        reward = 10.0 if feedback_str == "CONFIRMED_FRAUD" else -15.0  # Heavy penalty for false positive
-    elif action_str == "APPROVE":
-        reward = 2.0 if feedback_str == "CLEAN_SETTLEMENT" else -25.0  # Severe penalty for fraud chargeback
-    elif action_str == "CHALLENGE_2FA":
-        reward = 5.0 if feedback_str in ("2FA_PASSED", "CLEAN_SETTLEMENT") else 8.0  # Intercepted bot
-    elif action_str == "MANUAL_REVIEW":
-        reward = 8.0 if feedback_str == "CONFIRMED_FRAUD" else -2.0  # Analyst cost
-    else:
-        reward = 0.0
-
-    context = {
-        "ml_score": 0.85 if feedback_str == "CONFIRMED_FRAUD" else 0.15,
-        "amount": amt,
-        "user_velocity_1m": 2,
-        "carding_threat_score": 0.5,
-        "device_trust_score": 0.8,
-        "graph_risk_score": 0.4
-    }
-
-    rl_policy_agent.update_policy(context, action_str, reward)
-
-    return {
-        "status": "POLICY_UPDATED_ONLINE",
-        "transaction_id": payload.transaction_id,
-        "action": action_str,
-        "feedback": feedback_str,
-        "computed_reward": reward,
-        "cumulative_reward": rl_policy_agent.cumulative_reward
-    }
-
-
-@app.get("/api/v1/rl/telemetry")
-def api_rl_telemetry():
-    """Returns real-time Contextual Bandit policy agent statistics and payoff distributions."""
-    return rl_policy_agent.get_telemetry()
-
-
 # ==========================================
 # CONCEPT DRIFT & PSI MONITOR ENDPOINTS
 # ==========================================
@@ -2220,11 +2165,10 @@ def api_prometheus_metrics():
     quarantined_ips = filter_stats.get("bloom_quarantined_ips", 0)
     quarantined_cards = filter_stats.get("bloom_quarantined_cards", 0)
 
-    # RL Contextual Bandit telemetry
-    rl_telem = rl_policy_agent.get_telemetry()
-    rl_decisions = rl_telem.get("total_decisions_served", 0)
-    rl_reward = rl_telem.get("cumulative_reward", 0.0)
-    rl_alpha = rl_telem.get("alpha_exploration", 0.20)
+    # Policy Telemetry
+    rl_decisions = 0
+    rl_reward = 0.0
+    rl_alpha = 0.0
 
     # BiGAN Reconstruction telemetry
     try:
@@ -2748,63 +2692,6 @@ def api_streamer_burst(payload: StreamerBurstPayload):
 def api_streamer_status():
     """Returns current live background streamer status and high-throughput telemetry."""
     return continuous_streamer.get_status()
-
-
-# ==============================================================
-# ADVERSARIAL ARENA (RED TEAM VS. BLUE TEAM) ENDPOINTS
-# ==============================================================
-class AdversarialDuelPayload(BaseModel):
-    strategy: Optional[str] = "FGSM_EVASION"
-    epsilon: Optional[float] = 0.25
-    custom_vector: Optional[List[float]] = None
-
-class AdversarialCampaignPayload(BaseModel):
-    rounds: Optional[int] = 15
-    min_epsilon: Optional[float] = 0.15
-    max_epsilon: Optional[float] = 0.45
-
-
-@app.post("/api/v1/adversarial/duel")
-def api_adversarial_duel(payload: AdversarialDuelPayload):
-    """Executes a 1v1 Red Team vs Blue Team adversarial machine learning skirmish."""
-    try:
-        strat = AttackStrategy(payload.strategy)
-    except Exception:
-        strat = AttackStrategy.FGSM_EVASION
-    
-    eps = float(payload.epsilon or 0.25)
-    eps = max(0.01, min(0.95, eps))
-    res = adversarial_arena_engine.execute_duel(
-        strategy=strat,
-        epsilon=eps,
-        custom_base_vector=payload.custom_vector
-    )
-    return res
-
-
-@app.post("/api/v1/adversarial/campaign")
-def api_adversarial_campaign(payload: AdversarialCampaignPayload):
-    """Executes an automated multi-round war game showing dynamic defensive hardening."""
-    rounds = max(1, min(100, int(payload.rounds or 15)))
-    min_eps = max(0.05, float(payload.min_epsilon or 0.15))
-    max_eps = min(0.90, max(min_eps + 0.05, float(payload.max_epsilon or 0.45)))
-    return adversarial_arena_engine.execute_campaign(
-        rounds=rounds,
-        epsilon_range=(min_eps, max_eps)
-    )
-
-
-@app.get("/api/v1/adversarial/scoreboard")
-def api_adversarial_scoreboard():
-    """Retrieves live Red Team vs Blue Team scoreboard metrics and duel histories."""
-    return adversarial_arena_engine.get_scoreboard()
-
-
-@app.post("/api/v1/adversarial/reset")
-def api_adversarial_reset():
-    """Resets the arena metrics and defensive hardening to baseline."""
-    adversarial_arena_engine.reset_arena()
-    return {"status": "arena_reset_success", "scoreboard": adversarial_arena_engine.get_scoreboard()}
 
 
 # ==========================================

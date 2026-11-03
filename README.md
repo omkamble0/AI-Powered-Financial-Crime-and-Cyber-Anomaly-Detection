@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Platform-FinCipher_AI_v2.4_Enterprise-00f2fe?style=for-the-badge" alt="Platform">
   <img src="https://img.shields.io/badge/Inference_SLA-%3C3.5ms_P95-00e676?style=for-the-badge" alt="Latency">
   <img src="https://img.shields.io/badge/Security-PCI--DSS_4.0_%2B_OWASP_Hardened-ff3366?style=for-the-badge" alt="Security">
-  <img src="https://img.shields.io/badge/Test_Coverage-224_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
+  <img src="https://img.shields.io/badge/Test_Coverage-222_Passed_%28100%25%29-38ef7d?style=for-the-badge" alt="Tests">
   <img src="https://img.shields.io/badge/Architecture-Event--Driven_Worker_Pool-9b59b6?style=for-the-badge" alt="Architecture">
   <img src="https://img.shields.io/badge/Author-Om_Kamble-4facfe?style=for-the-badge" alt="Author">
 </p>
@@ -102,7 +102,7 @@ Off-the-shelf black-box machine learning models fail in production because:
 Rather than functioning as a narrow credit-card-only tool, the ingestion core decouples schema normalization from risk evaluation, natively supporting four operational domains:
 * **Banking & Wire:** BSA/AML structuring detection, rapid cash-out velocity, international wires.
 * **Cryptocurrency:** Zero-value lookalike vanity address poisoning detection (Hamming and entropy divergence $> 50\%$) and illiquid pair cross-trading siphon interception (order-book depth vs. index price divergence).
-* **Cybersecurity / SOC:** Impossible travel velocity calculations (Haversine formula $> 850\text{ km/h}$), credential stuffing, and hardware token-device fingerprint binding (`/24` subnet + user-agent hashing).
+* **Account Security & Session Defense:** Hardware token-device fingerprint binding (`/24` subnet + user-agent hashing), credential stuffing defense, and rogue extension session hijacking prevention.
 * **E-Commerce:** Carding botnet micro-authorization defense, promotion farming, and return abuse.
 
 ### 2. Explainable AI (XAI) & Dynamic Reason Codes
@@ -160,9 +160,9 @@ All system performance benchmarks and test suites are verified and repeatable:
 ============================== TEST SUITE SUMMARY ==============================
 Test Runner: Pytest 9.1.1 | Python 3.14.3 | Windows Server / Desktop Environment
 Total Test Files: 22 modules
-Total Test Cases: 224 automated unit & integration tests
-Pass Rate:        100% (224 passed, 0 failed, 0 errors, 0 regressions)
-Execution Time:   22.68s
+Total Test Cases: 222 automated unit & integration tests
+Pass Rate:        100% (222 passed, 0 failed, 0 errors, 0 regressions)
+Execution Time:   15.26s
 ================================================================================
 ```
 
@@ -265,7 +265,7 @@ Access the interfaces:
 ### 3. Run the Automated Test Suite
 
 ```bash
-# Run all 224 unit and integration tests
+# Run all 222 unit and integration tests
 python -m pytest tests/ -v
 ```
 
