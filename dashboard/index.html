@@ -178,6 +178,13 @@
             <div class="date-chip">
               📅 <span id="currentDateStr">Live Monitoring Session</span>
             </div>
+            <div class="streamer-status-pill" id="homeStreamStatusPill" style="cursor: pointer;" title="Toggle Continuous Real-Time Streaming Ingestion">
+              <span class="streamer-pulse-dot" id="homeStreamPulseDot"></span>
+              <span id="homeStreamStatusText">STREAM IDLE</span>
+            </div>
+            <button type="button" class="btn btn-outline-sm" id="btnHomeToggleStream" style="font-weight: 700; font-size: 11px;">
+              ▶ Stream Live
+            </button>
             <button type="button" class="btn btn-emerald" id="btnHeaderUpload">
               + Ingest Dataset
             </button>

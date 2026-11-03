@@ -2642,7 +2642,7 @@ def api_streamer_start(
     current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
     """Starts continuous multi-threaded background transaction streaming across domains."""
-    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+    if settings.is_production and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
         raise HTTPException(status_code=403, detail="Controlling streaming generators requires admin or fraud_manager role.")
     return continuous_streamer.start(
         tps=payload.tps or 2.0,
@@ -2654,7 +2654,7 @@ def api_streamer_start(
 @app.post("/api/v1/streamer/stop")
 def api_streamer_stop(current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)):
     """Stops continuous transaction streaming daemon."""
-    if not settings.is_testing and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
+    if settings.is_production and (not current_user or current_user.get("role") not in ("admin", "fraud_manager", "lead_risk_architect", "fraud_ops_lead")):
         raise HTTPException(status_code=403, detail="Controlling streaming generators requires admin or fraud_manager role.")
     return continuous_streamer.stop()
 

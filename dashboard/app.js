@@ -33,6 +33,8 @@ function escapeHtml(str) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
+  updateLiveClock();
+  setInterval(updateLiveClock, 1000);
   initTabs();
   initCharts();
   initTierInspector();
@@ -71,6 +73,17 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
+// ==========================================
+// 0. LIVE SESSION TIMESTAMP CLOCK
+// ==========================================
+function updateLiveClock() {
+  const el = document.getElementById("currentDateStr");
+  if (el) {
+    const now = new Date();
+    el.textContent = `${now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • ${now.toLocaleTimeString()}`;
+  }
+}
+
 // 1. TABS NAVIGATION & DOCK SYNC
 // ==========================================
 function initTabs() {
@@ -1152,6 +1165,119 @@ function openAuditModal(record) {
 }
 
 // ==========================================
+// ==========================================
+// 7.5 OVERVIEW LIVE STREAM ACCUMULATOR
+// ==========================================
+function feedHomeDashboardStreamEvent(ev) {
+  if (!ev) return;
+
+  const tbody = document.getElementById("datasetTableBody");
+  if (tbody) {
+    const empty = tbody.querySelector(".empty-row");
+    if (empty) empty.remove();
+
+    const tr = document.createElement("tr");
+    tr.style.background = "rgba(16, 185, 129, 0.05)";
+    tr.style.transition = "background 1.2s ease";
+    setTimeout(() => { tr.style.background = ""; }, 1200);
+
+    const eventId = ev.event_id || ev.transaction_id || ("EVT_" + Math.random().toString(36).substring(2, 9).toUpperCase());
+    const actor = ev.primary_entity_id || ev.user_id || "entity_stream";
+    const amountVal = typeof ev.amount === "number" ? ev.amount : (ev.cart_total || ev.raw_amount || 145.0);
+    const scoreVal = typeof ev.risk_score === "number" ? ev.risk_score : 0.05;
+    const dec = (ev.decision || "APPROVE").toUpperCase();
+
+    let chipClass = "chip-approved";
+    let chipLabel = "• Approved";
+    if (dec === "BLOCK" || dec === "QUARANTINE") {
+      chipClass = "chip-danger";
+      chipLabel = "• Flagged Fraud";
+    } else if (dec.includes("CHALLENGE") || dec.includes("REVIEW") || dec.includes("2FA")) {
+      chipClass = "chip-warning";
+      chipLabel = "• 2FA Review";
+    }
+
+    const domain = (ev.domain || "BANKING").toUpperCase();
+    const domainIcon = domain === "CYBERSECURITY" ? "🛡️" : (domain === "ECOMMERCE" ? "🛒" : "💳");
+    const reasonText = (ev.rule_hits && ev.rule_hits.length > 0) ? ev.rule_hits[0] : (ev.forensic_narrative || "Live Streamed Nominal Parameters");
+
+    tr.innerHTML = `
+      <td><span style="font-size: 10px; font-weight: 800; color: #059669; background: #e0f2fe; padding: 2px 6px; border-radius: 4px;">⚡ LIVE</span></td>
+      <td>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <span style="font-size: 16px;">${domainIcon}</span>
+          <strong style="color: #0f172a; font-family: var(--font-mono); font-size: 12px;">${escapeHtml(eventId)}</strong>
+        </div>
+      </td>
+      <td style="font-family: var(--font-mono); font-size: 11px;">${escapeHtml(actor)}</td>
+      <td style="font-weight: 800; color: #0f172a;">$${amountVal.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+      <td style="color: ${scoreVal >= currentSensitivityThreshold ? '#e11d48' : '#059669'}; font-weight: 800; font-family: var(--font-mono);">${scoreVal.toFixed(2)}</td>
+      <td><span class="status-chip ${chipClass}">${chipLabel}</span></td>
+      <td style="font-size: 12px; color: #64748b; max-width: 240px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(reasonText)}</td>
+      <td><button type="button" class="btn-inspect btn-inspect-row">Audit</button></td>
+    `;
+
+    tbody.insertBefore(tr, tbody.firstChild);
+    if (tbody.children.length > 40) tbody.removeChild(tbody.lastChild);
+
+    const btnInspect = tr.querySelector(".btn-inspect-row");
+    if (btnInspect) {
+      btnInspect.addEventListener("click", () => {
+        openAuditModal({
+          transaction_id: eventId,
+          user_id: actor,
+          amount: amountVal,
+          risk_score: scoreVal,
+          decision: dec,
+          reasons: ev.rule_hits && ev.rule_hits.length > 0 ? ev.rule_hits : [reasonText],
+          raw_preview: ev
+        });
+      });
+    }
+  }
+
+  const amountVal = typeof ev.amount === "number" ? ev.amount : (ev.cart_total || ev.raw_amount || 145.0);
+  const dec = (ev.decision || "APPROVE").toUpperCase();
+
+  const elTotalVol = document.getElementById("statTotalVol");
+  if (elTotalVol && currentRawData && currentRawData.summary_metrics) {
+    currentRawData.summary_metrics.total_volume_usd += amountVal;
+    elTotalVol.textContent = `$${currentRawData.summary_metrics.total_volume_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+  }
+
+  if (dec === "BLOCK" || dec === "QUARANTINE") {
+    const elRiskVol = document.getElementById("statRiskVol");
+    if (elRiskVol && currentRawData && currentRawData.summary_metrics) {
+      currentRawData.summary_metrics.exposed_risk_volume_usd = (currentRawData.summary_metrics.exposed_risk_volume_usd || 0) + amountVal;
+      elRiskVol.textContent = `$${currentRawData.summary_metrics.exposed_risk_volume_usd.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+    const elBlocked = document.getElementById("statBlockedCount");
+    if (elBlocked && currentRawData && currentRawData.summary_metrics) {
+      currentRawData.summary_metrics.total_blocked_fraud = (currentRawData.summary_metrics.total_blocked_fraud || 0) + 1;
+      elBlocked.textContent = currentRawData.summary_metrics.total_blocked_fraud.toLocaleString();
+    }
+  } else {
+    const elApproved = document.getElementById("statApprovedCount");
+    if (elApproved && currentRawData && currentRawData.summary_metrics) {
+      currentRawData.summary_metrics.total_approved = (currentRawData.summary_metrics.total_approved || 0) + 1;
+      elApproved.textContent = currentRawData.summary_metrics.total_approved.toLocaleString();
+    }
+    const elApprovedVol = document.getElementById("statApprovedVolume");
+    if (elApprovedVol && currentRawData && currentRawData.summary_metrics) {
+      const safeVol = Math.max(0, currentRawData.summary_metrics.total_volume_usd - (currentRawData.summary_metrics.exposed_risk_volume_usd || 0));
+      elApprovedVol.textContent = `$${safeVol.toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    }
+  }
+
+  if (chartSparkline && chartSparkline.data && chartSparkline.data.datasets[0]) {
+    const ds = chartSparkline.data.datasets[0];
+    const newPoint = Math.min(50, Math.max(5, (ev.risk_score || 0.1) * 45 + Math.random() * 8));
+    ds.data.push(Math.round(newPoint));
+    if (ds.data.length > 12) ds.data.shift();
+    chartSparkline.update("none");
+  }
+}
+
 // 8. TAB 4: WEBSOCKET LIVE STREAM FEED
 // ==========================================
 function initWebSocket() {
@@ -1168,6 +1294,7 @@ function initWebSocket() {
         if (payload.type === "STREAM_EVENT") {
           if (payload.event) {
             appendLiveRadarRow(payload.event);
+            feedHomeDashboardStreamEvent(payload.event);
           }
           if (payload.telemetry) {
             updateStreamerTelemetry(payload.telemetry);
@@ -4428,6 +4555,19 @@ let streamerPollingInterval = null;
 
 function initContinuousStreamerCockpit() {
   const btnToggle = document.getElementById("btnToggleContinuousStream");
+  const btnHomeToggle = document.getElementById("btnHomeToggleStream");
+  const homePill = document.getElementById("homeStreamStatusPill");
+
+  if (btnHomeToggle && btnToggle) {
+    btnHomeToggle.addEventListener("click", () => {
+      btnToggle.click();
+    });
+  }
+  if (homePill && btnToggle) {
+    homePill.addEventListener("click", () => {
+      btnToggle.click();
+    });
+  }
   const slider = document.getElementById("streamerTpsSlider");
   const tpsVal = document.getElementById("streamerTpsVal");
   const shockSelect = document.getElementById("streamerShockSelect");
@@ -4587,7 +4727,10 @@ function initContinuousStreamerCockpit() {
         });
         const data = await res.json();
         if (data.events && Array.isArray(data.events)) {
-          data.events.forEach(ev => appendLiveRadarRow(ev));
+          data.events.forEach(ev => {
+            appendLiveRadarRow(ev);
+            feedHomeDashboardStreamEvent(ev);
+          });
         }
         showToast(`Burst of ${data.count || 25} multi-domain events ingested`, "success");
       } catch (err) {
@@ -4613,7 +4756,10 @@ function initContinuousStreamerCockpit() {
         });
         const data = await res.json();
         if (data.events && Array.isArray(data.events)) {
-          data.events.forEach(ev => appendLiveRadarRow(ev));
+          data.events.forEach(ev => {
+            appendLiveRadarRow(ev);
+            feedHomeDashboardStreamEvent(ev);
+          });
         }
         showToast(`Stress test: 100 multi-domain events ingested`, "success");
       } catch (err) {
@@ -4638,10 +4784,13 @@ async function refreshStreamerStatus() {
 }
 
 function updateStreamerUI(status) {
-  if (!status) return;
+  if (!status || status.is_running === undefined) return;
   const btnToggle = document.getElementById("btnToggleContinuousStream");
+  const btnHomeToggle = document.getElementById("btnHomeToggleStream");
   const pill = document.getElementById("streamerStatusPill");
+  const homePill = document.getElementById("homeStreamStatusPill");
   const statusText = document.getElementById("streamerStatusText");
+  const homeStatusText = document.getElementById("homeStreamStatusText");
   const statsBadge = document.getElementById("streamerStatsBadge");
   const liveMeasuredTps = document.getElementById("liveMeasuredTps");
   const telemetryTargetTps = document.getElementById("telemetryTargetTps");
@@ -4656,16 +4805,31 @@ function updateStreamerUI(status) {
       btnToggle.className = "btn btn-outline-sm";
       btnToggle.innerHTML = "⏸ Pause Continuous Stream";
     }
+    if (btnHomeToggle) {
+      btnHomeToggle.setAttribute("data-running", "true");
+      btnHomeToggle.className = "btn btn-rose-sm";
+      btnHomeToggle.innerHTML = "⏸ Pause Stream";
+    }
     if (pill) pill.className = "streamer-status-pill running";
-    if (statusText) statusText.textContent = `STREAMING (${status.target_tps} TPS)`;
+    if (homePill) homePill.className = "streamer-status-pill running";
+    const label = `STREAMING (${(status.target_tps || 25).toFixed(0)} TPS)`;
+    if (statusText) statusText.textContent = label;
+    if (homeStatusText) homeStatusText.textContent = label;
   } else {
     if (btnToggle) {
       btnToggle.setAttribute("data-running", "false");
       btnToggle.className = "btn btn-emerald";
       btnToggle.innerHTML = "▶ Start Continuous Stream";
     }
+    if (btnHomeToggle) {
+      btnHomeToggle.setAttribute("data-running", "false");
+      btnHomeToggle.className = "btn btn-outline-sm";
+      btnHomeToggle.innerHTML = "▶ Stream Live";
+    }
     if (pill) pill.className = "streamer-status-pill";
+    if (homePill) homePill.className = "streamer-status-pill";
     if (statusText) statusText.textContent = "STREAM IDLE";
+    if (homeStatusText) homeStatusText.textContent = "STREAM IDLE";
   }
 
   if (liveMeasuredTps && status.instantaneous_tps !== undefined) {
