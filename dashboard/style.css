@@ -78,55 +78,86 @@ html, body {
   background-color: var(--bg-page);
 }
 
-/* LEFT SIDEBAR DOCK */
+/* LEFT SIDEBAR DOCK - OPTIMIZED FOR ALL VIEWPORT HEIGHTS */
 .sidebar-dock {
-  width: 76px;
-  min-width: 76px;
+  width: 70px;
+  min-width: 70px;
   background: #ffffff;
-  border-right: 1px solid var(--border-subtle);
+  border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 24px 0;
-  gap: 32px;
+  padding: 12px 0 16px 0;
+  gap: 12px;
   position: sticky;
   top: 0;
   height: 100vh;
+  max-height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
   z-index: 50;
   flex-shrink: 0;
+  box-sizing: border-box;
+  box-shadow: 1px 0 6px rgba(0, 0, 0, 0.02);
+}
+
+/* Subtle, non-intrusive scrollbar for small viewport heights */
+.sidebar-dock::-webkit-scrollbar {
+  width: 3px;
+}
+.sidebar-dock::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 3px;
+}
+.sidebar-dock::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sidebar-dock {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(148, 163, 184, 0.3) transparent;
 }
 
 .sidebar-logo {
-  font-size: 26px;
-  width: 48px;
-  height: 48px;
-  background: var(--color-emerald-soft);
-  border-radius: var(--radius-md);
+  font-size: 20px;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  background: #059669;
+  color: #ffffff;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.25);
 }
 
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
   flex: 1;
+  padding-bottom: 24px;
+  box-sizing: border-box;
 }
 
 .dock-btn {
-  width: 46px;
-  height: 46px;
-  border-radius: var(--radius-md);
-  border: none;
+  width: 42px;
+  height: 42px;
+  min-height: 42px;
+  border-radius: 10px;
+  border: 1px solid transparent;
   background: transparent;
-  color: var(--text-secondary);
+  color: #64748b;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   text-decoration: none;
+  flex-shrink: 0;
 }
 
 .dock-btn:hover {

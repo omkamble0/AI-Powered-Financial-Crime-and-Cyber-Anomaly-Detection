@@ -175,9 +175,6 @@
                 <option value="ECOMMERCE" style="background: #0f172a; color: #f8fafc;">🛒 E-Commerce &amp; Retail</option>
               </select>
             </div>
-            <div class="date-chip">
-              📅 <span id="currentDateStr">Live Monitoring Session</span>
-            </div>
             <div class="streamer-status-pill" id="homeStreamStatusPill" style="cursor: pointer;" title="Toggle Continuous Real-Time Streaming Ingestion">
               <span class="streamer-pulse-dot" id="homeStreamPulseDot"></span>
               <span id="homeStreamStatusText">STREAM IDLE</span>
@@ -601,7 +598,6 @@
             <table class="friendly-table" id="tierEventsTable">
               <thead>
                 <tr>
-                  <th>Time</th>
                   <th>Entity / Account ID</th>
                   <th>Domain Architecture</th>
                   <th>Threat Vector</th>
@@ -613,7 +609,6 @@
               </thead>
               <tbody id="tierInspectorBody">
                 <tr data-tier="CRITICAL">
-                  <td><span class="mono">Just now</span></td>
                   <td><strong>usr_syndicate_99</strong></td>
                   <td><span class="status-chip chip-block" style="font-size: 10px;">🏦 Banking</span></td>
                   <td>AML CTR Structuring Loop ($9,950 x 4)</td>
@@ -623,7 +618,6 @@
                   <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
                 </tr>
                 <tr data-tier="CRITICAL">
-                  <td><span class="mono">2m ago</span></td>
                   <td><strong>admin_svc_04</strong></td>
                   <td><span class="status-chip chip-block" style="font-size: 10px;">🛡️ Cyber</span></td>
                   <td>Impossible Travel (SF &rarr; London 15m)</td>
@@ -633,7 +627,6 @@
                   <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
                 </tr>
                 <tr data-tier="REVIEW">
-                  <td><span class="mono">5m ago</span></td>
                   <td><strong>cust_vip_4412</strong></td>
                   <td><span class="status-chip chip-review" style="font-size: 10px;">🛒 E-Com</span></td>
                   <td>Promo Code Velocity Surge (6 claims/min)</td>
@@ -643,7 +636,6 @@
                   <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
                 </tr>
                 <tr data-tier="REVIEW">
-                  <td><span class="mono">8m ago</span></td>
                   <td><strong>cardholder_8109</strong></td>
                   <td><span class="status-chip chip-review" style="font-size: 10px;">🏦 Banking</span></td>
                   <td>High-Value Unrecognized Beneficiary</td>
@@ -653,7 +645,6 @@
                   <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
                 </tr>
                 <tr data-tier="SAFE">
-                  <td><span class="mono">11m ago</span></td>
                   <td><strong>usr_recurrent_32</strong></td>
                   <td><span class="status-chip chip-approved" style="font-size: 10px;">🛒 E-Com</span></td>
                   <td>Standard Checkout (Trusted Device)</td>
@@ -663,7 +654,6 @@
                   <td><button type="button" class="btn-outline-sm btn-inspect-row">View XAI</button></td>
                 </tr>
                 <tr data-tier="SAFE">
-                  <td><span class="mono">14m ago</span></td>
                   <td><strong>usr_salary_direct</strong></td>
                   <td><span class="status-chip chip-approved" style="font-size: 10px;">🏦 Banking</span></td>
                   <td>Automated Payroll Direct Deposit</td>
@@ -930,7 +920,6 @@
             <table class="friendly-table" id="streamLiveTable">
               <thead>
                 <tr>
-                  <th>TIME</th>
                   <th>DOMAIN</th>
                   <th>EVENT ID</th>
                   <th>ACTOR / ENTITY</th>
@@ -3332,7 +3321,6 @@
                     <th>Parent Span</th>
                     <th>Duration (ms)</th>
                     <th>Status</th>
-                    <th>Time</th>
                   </tr>
                 </thead>
                 <tbody id="otelTracesTableBody">

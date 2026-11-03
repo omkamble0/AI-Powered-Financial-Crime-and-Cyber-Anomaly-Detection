@@ -33,8 +33,6 @@ function escapeHtml(str) {
 }
 
 document.addEventListener("DOMContentLoaded", () => {
-  updateLiveClock();
-  setInterval(updateLiveClock, 1000);
   initTabs();
   initCharts();
   initTierInspector();
@@ -73,17 +71,6 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 // ==========================================
-// ==========================================
-// 0. LIVE SESSION TIMESTAMP CLOCK
-// ==========================================
-function updateLiveClock() {
-  const el = document.getElementById("currentDateStr");
-  if (el) {
-    const now = new Date();
-    el.textContent = `${now.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} • ${now.toLocaleTimeString()}`;
-  }
-}
-
 // 1. TABS NAVIGATION & DOCK SYNC
 // ==========================================
 function initTabs() {
@@ -848,8 +835,9 @@ function renderAnalysisView(data) {
 
   // Feature Drivers
   if (chartFeatureDrivers && data.feature_importances && data.feature_importances.length > 0) {
-    chartFeatureDrivers.data.labels = data.feature_importances.map(f => f.feature);
-    chartFeatureDrivers.data.datasets[0].data = data.feature_importances.map(f => f.importance);
+    const filteredDrivers = (data.feature_importances || []).filter(f => !['time', 'timestamp', 'date', 'step'].includes(f.feature.toLowerCase()));
+    chartFeatureDrivers.data.labels = filteredDrivers.map(f => f.feature);
+    chartFeatureDrivers.data.datasets[0].data = filteredDrivers.map(f => f.importance);
     chartFeatureDrivers.update();
   }
 
@@ -865,6 +853,9 @@ function renderAnalysisView(data) {
 function renderSchemaTable(profiles) {
   const tbody = document.getElementById("schemaTableBody");
   if (!tbody) return;
+
+  // Filter out any non-informative time/timestamp fields
+  profiles = (profiles || []).filter(p => p && p.name && !['time', 'timestamp', 'date', 'created_at', 'step'].includes(p.name.toLowerCase()));
 
   if (!profiles || profiles.length === 0) {
     tbody.innerHTML = `<tr class="empty-row"><td colspan="9">No column profiles available.</td></tr>`;
@@ -1410,8 +1401,7 @@ function appendLiveRadarRow(tx) {
   const scoreColor = scoreVal >= 0.5 ? "#e11d48" : "#059669";
 
   const latencyVal = tx.latency_ms !== undefined ? `${tx.latency_ms.toFixed(2)} ms` : "0.24 ms";
-  const now = new Date();
-  const timeStr = `${now.getHours().toString().padStart(2, "0")}:${now.getMinutes().toString().padStart(2, "0")}:${now.getSeconds().toString().padStart(2, "0")}`;
+
 
   let policyChips = `<span style="color:#94a3b8; font-size:11px;">Nominal Policy</span>`;
   if (tx.rule_hits && tx.rule_hits.length > 0) {
@@ -1419,7 +1409,6 @@ function appendLiveRadarRow(tx) {
   }
 
   tr.innerHTML = `
-    <td style="font-family: var(--font-mono); font-size: 11px;">${timeStr}</td>
     <td>${domainBadge}</td>
     <td style="color: #059669; font-family: var(--font-mono); font-weight: 700; font-size: 11px;">${escapeHtml(eventId)}</td>
     <td style="font-weight: 600; font-size: 12px; color: #0f172a;">${escapeHtml(actor)}</td>
@@ -6157,8 +6146,7 @@ function initLiveOpsCockpit() {
         const chipClass = decision === "BLOCK" ? "chip-block" : (decision === "CHALLENGE" ? "chip-review" : "chip-approved");
         const leftAccent = decision === "BLOCK" ? "3.5px solid #e11d48" : (decision === "CHALLENGE" ? "3.5px solid #d97706" : "3.5px solid #059669");
         const domainChip = domainTag === "BANKING" ? "🏦 BANKING" : (domainTag === "CYBER" ? "🛡️ CYBER" : "🛒 E-COMM");
-        const timeStr = new Date().toLocaleTimeString();
-        const ruleTag = ruleHits.length > 0
+                const ruleTag = ruleHits.length > 0
           ? `<span class="tag-detection ${decision === 'BLOCK' ? 'tag-detection-high' : 'tag-detection-med'}" style="font-size: 9.5px;">${ruleHits[0]}</span>`
           : `<span class="tag-detection tag-detection-benign" style="font-size: 9.5px;">Benign Stream</span>`;
 
@@ -6168,8 +6156,7 @@ function initLiveOpsCockpit() {
               <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
                 <span class="status-chip chip-neutral" style="font-size: 9px; padding: 1px 6px;">${domainChip}</span>
                 <span style="font-size: 11px; font-weight: 800; color: #0f172a; font-family: var(--font-mono);">${entityId}</span>
-                <span style="font-size: 10px; color: #64748b; font-weight: 500;">${timeStr}</span>
-              </div>
+                              </div>
               <div style="display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: #334155; font-weight: 600;">
                 <span>${scenarioName}</span>
                 ${ruleTag}
