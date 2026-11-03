@@ -251,15 +251,21 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Launch the Platform
+### 2. Launch the Platform (1-Click Unified Launcher)
+
+Launch the full engine, streaming pipeline, and open the interactive Studio Dashboard in your default browser with a single command:
 
 ```bash
-python -m uvicorn src.api.main:app --host 127.0.0.1 --port 8000
+python launch.py
 ```
 
-Access the interfaces:
+*(On Windows, you can also run `.\launch.bat` directly).*
+
+The launcher automatically verifies engine health and opens the interfaces:
 * 🖥️ **Interactive Cockpit UI:** [http://127.0.0.1:8000/dashboard](http://127.0.0.1:8000/dashboard)
+* ⚡ **Live Ingestion Radar:** [http://127.0.0.1:8000/dashboard](http://127.0.0.1:8000/dashboard) *(Tab: Live Stream)*
 * 🩺 **Cloud Health & Liveness Probe:** [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
+* 📖 **Interactive OpenAPI Documentation:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 * 📊 **Streaming Worker Telemetry:** [http://127.0.0.1:8000/api/v1/workers/status](http://127.0.0.1:8000/api/v1/workers/status)
 
 ### 3. Run the Automated Test Suite
