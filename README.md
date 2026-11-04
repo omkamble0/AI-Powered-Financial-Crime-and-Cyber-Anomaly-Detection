@@ -120,30 +120,20 @@ Rather than functioning as a narrow credit-card-only tool, the ingestion core de
 * **Account Security & Session Defense:** Hardware token-device fingerprint binding (`/24` subnet + user-agent hashing), credential stuffing defense, and rogue extension session hijacking prevention.
 * **E-Commerce:** Carding botnet micro-authorization defense, promotion farming, and return abuse.
 
-### 2. Explainable AI (XAI) & Dynamic Reason Codes
-Every transaction returns actionable, mathematically grounded explanations compliant with OCC SR 11-7 model risk governance standards:
-* Computes feature contributions using **TreeSHAP** and **Z-score latent subspace analysis**.
-* Generates clear, human-auditable explanations (e.g., `[ANOMALY_V14] Latent Cardholder Subspace Deviation (6.4σ)`, `[RAPID_VELOCITY] 6 transactions in 60 seconds`).
 
-### 3. Modern Crypto Exploit Hardening (Binance Incident Defenses)
+### 2. Modern Crypto Exploit Hardening (Binance Incident Defenses)
 Engineered targeted defensive filters against high-profile real-world cryptocurrency vectors:
 * **Address Poisoning & Vanity Clones:** Compares first 5 and last 5 hex characters against verified counterparty whitelists. Flags transactions where prefix/suffix match but middle entropy diverges by $\ge 50\%$, neutralizing visual truncation copy-paste traps.
 * **Counter-Trading & Slippage Siphons:** Monitors execution price against global reference index prices ($\ge 15\%$ moderate, $\ge 40\%$ extreme divergence) and order book depth ($\le \$25,000$ or trade volume $> 40\%$ of book depth), preventing attackers with hijacked session cookies from siphoning account funds through low-liquidity token pairs.
 * **Token-Device Fingerprint Binding:** Binds JWT access tokens to the client's network subnet and browser environment, preventing replayed cookies stolen via malicious browser extensions.
 
-### 4. Autonomous GenAI Cyber Copilot & SAR Studio
-Integrates localized and cloud LLM capabilities directly into the investigation workflow without degrading transactional latency:
-* **Automated FinCEN SAR Generator:** Automatically drafts complete, legally compliant Suspicious Activity Report narratives from case telemetry and evidence chains.
-* **Incident Dossiers & Root Cause Analysis:** Summarizes complex multi-stage attacks into executive briefings with MITRE ATT&CK taxonomy mappings (`T1078.004`, `T1499.003`, `T1059.006`).
-* **Deterministic Offline Fallback:** Functions 100% offline using a built-in heuristic reasoning engine when external AI APIs (Google Gemini / OpenAI) are unavailable.
-
-### 5. Resilient Streaming Infrastructure (Worker Pool, DLQ, Circuit Breaker)
+### 3. Resilient Streaming Infrastructure (Worker Pool, DLQ, Circuit Breaker)
 * **Worker Thread Pool:** 4 concurrent background worker threads process secondary forensic payloads from a thread-safe priority queue.
 * **Durable Idempotency Ledger:** Cryptographic hash caching prevents duplicate processing of retransmitted events.
 * **Dead Letter Queue (DLQ):** Captures failed or unparseable payloads with automatic replay capabilities via REST endpoint.
 * **Circuit Breaker:** Automatically trips to `OPEN` if downstream services fail repeatedly, shedding load and protecting the core engine from cascading failure.
 
-### 6. MLOps Lifecycle, Drift Monitoring & Canary Deployment
+### 4. MLOps Lifecycle, Drift Monitoring & Canary Deployment
 * **Population Stability Index (PSI):** Continuously monitors live feature distributions against baseline training data, alerting on statistical distribution drift ($PSI \ge 0.25$).
 * **Canary Traffic Routing:** Supports granular traffic splits (e.g., 90% Champion / 10% Challenger) for real-time model evaluation in production.
 * **Zero-Downtime Hot Promotion & Rollback:** Challenger models meeting governance quality gates ($F1 \ge 0.85$, $P95 \le 3.5\text{ms}$) can be hot-promoted to Champion without service restarts, with instant one-click rollback if anomalies arise.
