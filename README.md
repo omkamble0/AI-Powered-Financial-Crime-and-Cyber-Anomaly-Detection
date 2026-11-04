@@ -282,7 +282,7 @@ The launcher automatically verifies engine health and opens the interfaces:
 * 🩺 **Cloud Health & Liveness Probe:** [http://127.0.0.1:8000/health](http://127.0.0.1:8000/health)
 * 📖 **Interactive OpenAPI Documentation:** [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
 * 📊 **Streaming Worker Telemetry:** [http://127.0.0.1:8000/api/v1/workers/status](http://127.0.0.1:8000/api/v1/workers/status)
-
+* Direct link - https://cognitive-financial-crime-and-cyber-71oi.onrender.com/
 ### 3. Run the Automated Test Suite
 
 ```bash
