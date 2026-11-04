@@ -17,6 +17,8 @@ __pycache__/
 
 # Local Databases and Logs
 *.db
+*.db-shm
+*.db-wal
 *.log
 .system_generated/
 
@@ -24,6 +26,8 @@ __pycache__/
 data/creditcard.csv
 data/creditcard.csv.zip
 data/*.db
+*.db-shm
+*.db-wal
 
 # Local Backups & Snapshots
 backups/
