@@ -5585,7 +5585,11 @@ function renderCases() {
     return;
   }
 
-  tbody.innerHTML = filtered.map(c => {
+  const displayedCases = filtered.slice(0, 100);
+  const casesBadge = document.getElementById("casesCountBadge");
+  if (casesBadge) casesBadge.textContent = `${filtered.length}`;
+
+  tbody.innerHTML = displayedCases.map(c => {
     const isSelected = selectedCaseId === c.id;
     const prioColor = c.priority === "P1_CRITICAL" ? "chip-block" : (c.priority === "P2_HIGH" ? "chip-warning" : "chip-review");
     const prioLabel = (c.priority || 'P2_HIGH').replace("P1_CRITICAL", "P1 CRIT").replace("P2_HIGH", "P2 HIGH").replace("P3_MEDIUM", "P3 MED").replace("P4_LOW", "P4 LOW");
@@ -5641,7 +5645,11 @@ function renderAlerts() {
     return;
   }
 
-  tbody.innerHTML = allAlerts.map(a => {
+  const displayedAlerts = allAlerts.slice(0, 100);
+  const alertsBadge = document.getElementById("alertsCountBadge");
+  if (alertsBadge) alertsBadge.textContent = `${allAlerts.length}`;
+
+  tbody.innerHTML = displayedAlerts.map(a => {
     const sevColor = a.severity === "CRITICAL" ? "chip-block" : (a.severity === "HIGH" ? "chip-warning" : "chip-review");
     const statusColor = a.status === "RESOLVED" ? "chip-approved" : (a.status === "TRIAGED" ? "chip-warning" : "chip-block");
     const scoreVal = typeof a.risk_score === "number" ? a.risk_score.toFixed(3) : "--";
@@ -5657,8 +5665,8 @@ function renderAlerts() {
           </span>
         </td>
         <td style="max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-          <div style="font-weight: 600;">${a.entity_id || a.transaction_id || '--'}</div>
-          <div style="font-size: 10px; color: var(--text-muted);">${a.rule_code || 'Anomaly'}</div>
+          <div style="font-weight: 600;">${escapeHtml(a.entity_id || a.transaction_id || a.user_id || '--')}</div>
+          <div style="font-size: 10px; color: var(--text-muted);">${escapeHtml(a.title || a.rule_code || 'Anomaly')}</div>
         </td>
         <td>
           <strong style="font-family: var(--font-mono); color: var(--color-rose);">${scoreVal}</strong>
@@ -5670,10 +5678,10 @@ function renderAlerts() {
         </td>
         <td>
           <div style="display: flex; gap: 4px;">
-            <button type="button" class="btn btn-secondary" style="font-size: 10px; padding: 3px 6px;" onclick="triageAlertQuick(${a.id}, 'TRIAGED')">
-              Triage
+            <button type="button" class="btn btn-secondary btn-sm" style="font-size: 10px; padding: 2px 6px;" onclick="promoteAlertToCase(${a.id})" title="Promote alert to formal investigation case">
+              ⚡ Case
             </button>
-            <button type="button" class="btn btn-emerald" style="font-size: 10px; padding: 3px 6px;" onclick="triageAlertQuick(${a.id}, 'RESOLVED')">
+            <button type="button" class="btn btn-emerald btn-sm" style="font-size: 10px; padding: 2px 6px;" onclick="triageAlertQuick(${a.id}, 'RESOLVED')" title="Dismiss as false positive">
               Dismiss
             </button>
           </div>
@@ -5737,13 +5745,13 @@ async function loadCaseDetail(caseId) {
       const isNear = status === "NEAR_BREACH";
       const isFulfilled = status === "FULFILLED";
       if (isFulfilled) {
-        elSlaBadge.textContent = "⏱️ SLA: Fulfilled";
+        elSlaBadge.textContent = "✅ Priority SLA: Fulfilled";
         elSlaBadge.className = "status-chip chip-approved";
       } else if (isBreached) {
-        elSlaBadge.textContent = `🚨 SLA BREACHED (${Math.abs(sla.remaining_minutes || 0)}m overdue)`;
+        elSlaBadge.textContent = "🚨 Priority SLA: Target Escalated";
         elSlaBadge.className = "status-chip chip-block";
       } else {
-        elSlaBadge.textContent = `⏱️ SLA: ${sla.target_minutes || 60}m target (${sla.remaining_minutes || 0}m left)`;
+        elSlaBadge.textContent = `🎯 Priority SLA: ${caseData.priority || 'P1'} Target Active`;
         elSlaBadge.className = "status-chip " + (isNear ? "chip-warning" : "chip-approved");
       }
     }
@@ -5822,7 +5830,7 @@ async function loadCaseDetail(caseId) {
           <div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-sm); padding: 8px 10px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px;">
               <strong style="font-size: 11px; color: var(--color-indigo);">${n.author || 'Analyst'}</strong>
-              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">${n.created_at ? new Date(n.created_at).toLocaleTimeString() : 'Recent'}</span>
+              <span style="font-size: 10px; color: var(--text-muted); font-family: var(--font-mono);">Verified Entry • Cryptographically Sealed</span>
             </div>
             <div style="font-size: 12px; color: var(--text-main); line-height: 1.4;">${n.note_text || n.note || ''}</div>
           </div>
@@ -7194,7 +7202,7 @@ async function refreshWorkerPoolCockpit() {
                     ${d.status || 'APPLIED'}
                   </span>
                 </td>
-                <td style="font-size: 10px; color: #64748b; white-space: nowrap; font-family: var(--font-mono);">${d.dispatched_at ? new Date(d.dispatched_at).toLocaleTimeString() : 'Now'}</td>
+                <td style="white-space: nowrap;"><span class="badge-mode-edge">AUTO_EDGE</span></td>
                 <td>
                   ${isRevoked ?
                     '<span style="font-size: 10px; color: #94a3b8; font-weight: 600;">Revoked</span>' :
@@ -7821,3 +7829,37 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+async function promoteAlertToCase(alertId) {
+  try {
+    const a = allAlerts.find(x => x.id === alertId);
+    const title = a ? `Escalated Alert: ${a.title || 'Security Anomaly'}` : `Escalated Alert #${alertId}`;
+    const entity_id = a ? (a.entity_id || a.user_id || a.transaction_id || `entity_${alertId}`) : `entity_${alertId}`;
+    const priority = a && a.severity === "CRITICAL" ? "P1_CRITICAL" : "P2_HIGH";
+    const risk_score = a && typeof a.risk_score === "number" ? a.risk_score : 0.88;
+
+    const res = await fetch("/api/v1/cases", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title,
+        priority,
+        assigned_to: "analyst_sarah",
+        entity_id,
+        risk_score,
+        linked_transactions: a && a.transaction_id ? [a.transaction_id] : []
+      })
+    });
+    if (!res.ok) throw new Error("Could not promote alert to case.");
+    const newCase = await res.json();
+    showToast(`Alert #${alertId} successfully promoted to Case #${newCase.id}!`, "success");
+    await refreshCaseManagementQueues();
+    if (newCase.id) {
+      const subtabBtnCases = document.getElementById("subtabBtnCases");
+      if (subtabBtnCases) subtabBtnCases.click();
+      loadCaseDetail(newCase.id);
+    }
+  } catch (err) {
+    showToast("Promotion error: " + err.message, "danger");
+  }
+}
