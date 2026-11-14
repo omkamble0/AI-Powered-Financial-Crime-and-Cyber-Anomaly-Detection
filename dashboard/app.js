@@ -123,6 +123,15 @@ function initTabs() {
       if (targetId) switchTab(targetId);
     });
   });
+
+  document.querySelectorAll("[data-tab]").forEach(el => {
+    if (!el.classList.contains("dock-btn") && !el.classList.contains("nav-pill") && !el.classList.contains("domain-seg-btn")) {
+      el.addEventListener("click", () => {
+        const targetId = el.getAttribute("data-tab");
+        if (targetId) switchTab(targetId);
+      });
+    }
+  });
 }
 
 // ==========================================
@@ -1419,8 +1428,8 @@ function appendLiveRadarRow(tx) {
     <td>${policyChips}</td>
     <td>
       <div style="display: flex; gap: 4px;">
-        <button type="button" class="btn-rl-clean" onclick="submitRlFeedback('${eventId}', 'APPROVE', 'CLEAN_SETTLEMENT', 100)" title="Train LinUCB: Confirm Clean (+2 Reward)">👍 Clean</button>
-        <button type="button" class="btn-rl-fraud" onclick="submitRlFeedback('${eventId}', 'BLOCK', 'CONFIRMED_ANOMALY', 100)" title="Train LinUCB: Confirm Anomaly (+10 Reward)">🚨 Threat</button>
+        <button type="button" class="btn-rl-clean" onclick="submitRlFeedback('${eventId}', 'APPROVE', 'CLEAN_SETTLEMENT', 100)" title="Train LinUCB: Confirm Clean (+2 Reward)">Clean</button>
+        <button type="button" class="btn-rl-fraud" onclick="submitRlFeedback('${eventId}', 'BLOCK', 'CONFIRMED_ANOMALY', 100)" title="Train LinUCB: Confirm Anomaly (+10 Reward)">Threat</button>
       </div>
     </td>
   `;
@@ -7863,3 +7872,4 @@ async function promoteAlertToCase(alertId) {
     showToast("Promotion error: " + err.message, "danger");
   }
 }
+

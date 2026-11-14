@@ -53,17 +53,13 @@ def main():
 
     dashboard_url = f"http://{args.host}:{args.port}/dashboard"
     health_url = f"http://{args.host}:{args.port}/health"
-    docs_url = f"http://{args.host}:{args.port}/docs"
 
     banner = f"""
 ================================================================================
-   🛡️  FinCipher AI — Enterprise Risk & Fraud Intelligence Citadel
-   Version: v2.3 CORE / v2.4 Enterprise | Author: Om Kamble
+   🛡️  FinCipher AI — Unified Enterprise Risk & Fraud Intelligence Citadel
+   Version: v2.4 Enterprise | Author: Om Kamble
 ================================================================================
-   🌐 Studio Dashboard  : {dashboard_url}
-   ⚡ Live Stream Radar  : {dashboard_url} (Tab: Live Stream)
-   📖 Interactive API   : {docs_url}
-   🩺 Cloud Health Probe : {health_url}
+   🚀 Studio Dashboard : {dashboard_url}
 ================================================================================
 """
     print(banner)
