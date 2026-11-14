@@ -428,13 +428,18 @@ class TestPhase1And2(unittest.TestCase):
         self.assertIn("slack", data["channels"])
 
         # 2. Test synthetic alert dispatch
-        test_resp = client.post("/api/v1/notifications/test", json={
-            "alert_title": "Test SAR Escalation",
-            "severity": "CRITICAL",
-            "summary": "Synthetic test alert for SOC webhook validation",
-            "risk_score": 0.96,
-            "entity_id": "usr_test_phase7"
-        })
+        admin_token = create_access_token(user_id=1, username="admin", role="admin")
+        test_resp = client.post(
+            "/api/v1/notifications/test",
+            headers={"Authorization": f"Bearer {admin_token}"},
+            json={
+                "alert_title": "Test SAR Escalation",
+                "severity": "CRITICAL",
+                "summary": "Synthetic test alert for SOC webhook validation",
+                "risk_score": 0.96,
+                "entity_id": "usr_test_phase7"
+            }
+        )
         self.assertEqual(test_resp.status_code, 200)
         self.assertEqual(test_resp.json()["status"], "dispatched")
 

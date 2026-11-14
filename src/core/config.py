@@ -101,7 +101,8 @@ class Settings(BaseSettings):
         return (
             self.ENVIRONMENT == "testing"
             or "PYTEST_CURRENT_TEST" in os.environ
-            or (len(sys.argv) > 0 and "pytest" in sys.argv[0])
+            or any("pytest" in str(arg) or "unittest" in str(arg) for arg in sys.argv)
+            or "unittest" in sys.modules
         )
 
 
