@@ -39,7 +39,13 @@ jobs:
 
     - name: Execute Full FinCipher AI Test Suite (222 Tests)
       run: |
-        pytest tests/ -v
+        pytest tests/ -v --tb=short 2>&1 | tee test_results.log || {
+          echo "## ❌ Test Suite Failure Log" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          grep -A 35 "FAILURES" test_results.log >> $GITHUB_STEP_SUMMARY || tail -n 60 test_results.log >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          exit 1
+        }
 
     - name: Execute Adversarial ML Red-Team Benchmark
       run: |
