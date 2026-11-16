@@ -11,6 +11,8 @@ jobs:
   test-and-quality-gate:
     name: Unit, Integration & Adversarial Suite
     runs-on: ubuntu-latest
+    env:
+      PYTHONPATH: .
 
     steps:
     - name: Checkout Code Repository
@@ -35,9 +37,9 @@ jobs:
         # Exit-zero treats all stylistic warnings as non-breaking
         flake8 . --count --exit-zero --max-complexity=15 --max-line-length=140 --statistics --exclude=venv,.venv
 
-    - name: Execute Full FinCipher AI Test Suite (85 Tests)
+    - name: Execute Full FinCipher AI Test Suite (222 Tests)
       run: |
-        python -m unittest discover tests -v
+        pytest tests/ -v
 
     - name: Execute Adversarial ML Red-Team Benchmark
       run: |
