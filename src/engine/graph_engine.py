@@ -211,10 +211,10 @@ class GraphTopologyEngine:
             # BFS/DFS path traversal up to max_depth
             queue = deque()
             for edge in valid_out:
-                queue.append(([origin, edge["recipient"]], edge["amount"], [edge["time"]]))
+                queue.append(([origin, edge["recipient"]], edge["amount"], edge["amount"], [edge["time"]]))
 
             while queue:
-                path, current_amt, timestamps = queue.popleft()
+                path, initial_amt, current_amt, timestamps = queue.popleft()
                 current_node = path[-1]
 
                 if len(path) >= max_depth:
@@ -238,7 +238,7 @@ class GraphTopologyEngine:
                             "chain_id": f"MULE-{uuid.uuid4().hex[:8].upper()}",
                             "path": path,
                             "hops": len(path) - 1,
-                            "initial_amount": path_initial_amt if 'path_initial_amt' in locals() else current_amt,
+                            "initial_amount": initial_amt,
                             "terminal_amount": current_amt,
                             "avg_dwell_seconds": round(avg_dwell, 1),
                             "origin": path[0],
@@ -253,7 +253,7 @@ class GraphTopologyEngine:
                     if 0.5 <= ratio <= 1.2:
                         new_path = path + [down_edge["recipient"]]
                         new_timestamps = timestamps + [down_edge["time"]]
-                        queue.append((new_path, down_edge["amount"], new_timestamps))
+                        queue.append((new_path, initial_amt, down_edge["amount"], new_timestamps))
 
         # Deduplicate overlapping subchains, keeping longest
         unique_chains: List[Dict[str, Any]] = []

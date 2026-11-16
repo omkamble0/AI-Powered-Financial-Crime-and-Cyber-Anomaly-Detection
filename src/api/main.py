@@ -1172,7 +1172,6 @@ def export_analyzed_csv(
     current_user: Optional[Dict[str, Any]] = Depends(get_optional_user)
 ):
     """Export the analyzed dataset with calculated risk scores and reason codes."""
-    global last_analyzed_dataframe
     lookup_key = analysis_id
     if not lookup_key and current_user:
         lookup_key = f"usr_{current_user.get('id')}"

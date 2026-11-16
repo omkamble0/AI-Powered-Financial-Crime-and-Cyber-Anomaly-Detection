@@ -5,7 +5,7 @@ Author: Om Kamble
 
 import time
 import uuid
-from typing import Dict, Any, List, Tuple
+from typing import Dict, Any, List, Tuple, Optional
 from libs.models.events import GenericEvent, DomainType, EventType, EntityLink
 from libs.models.entities import Entity, EntityType, Relationship, RelationshipType
 
